@@ -29,13 +29,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
+  // 백엔드에서 내 정보 가져오기 (인증 실패 시 로그아웃 처리)
   const fetchMyInfoFromBackend = async () => {
     try {
       const response = await apiClient.get('/auth/users/me');
       console.log('백엔드 인증 성공:', response.data);
       return response.data;
-    } catch (error) {
-      console.error('백엔드 인증 실패:', error);
+    } catch (error: any) {
+      console.error('백엔드 인증 실패:', error.response?.status || error.message);
+      
+      // 401(Unauthorized) 또는 403(Forbidden) 에러 발생 시 로그아웃 처리
+      if (error.response?.status === 401 || error.response?.status === 403) {
+        console.warn('권한이 없거나 토큰이 유효하지 않아 로그아웃 처리합니다.');
+        await logout();
+      }
+      return null;
     }
   };
 
@@ -45,6 +53,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setLoading(false);
       
       if (firebaseUser) {
+        // Firebase 로그인은 성공했으나 백엔드 인증을 시도합니다.
         await fetchMyInfoFromBackend();
       }
     });
@@ -83,6 +92,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const logout = async () => {
     try {
       await signOut(auth);
+      setUser(null); // 상태 초기화
     } catch (error) {
       console.error('로그아웃 중 에러 발생:', error);
     }
