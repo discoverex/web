@@ -4,6 +4,8 @@ import './globals.css';
 import { menus } from './consts/menus';
 import { ThemeProvider } from 'next-themes';
 import ThemeSwitcher from '../components/theme-switcher';
+import { AuthProvider } from '../context/auth-context';
+import UserHeader from '../components/user-header';
 
 const geistSans = localFont({
   src: './fonts/GeistVF.woff',
@@ -28,21 +30,26 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <body className={`${geistSans.variable} ${geistMono.variable} h-screen w-screen`}>
         <ThemeProvider attribute="data-theme" defaultTheme="dark">
-          <div className="w-full px-4 py-2 flex justify-between gap-2 bg-amber-200 dark:bg-slate-900">
-            <div className="flex gap-6 items-center">
-              {menus.map((menu) => (
-                <a
-                  key={menu.name}
-                  href={menu.path}
-                  className="text-md hover:animate-bounce font-medium hover:font-bold"
-                >
-                  {menu.name}
-                </a>
-              ))}
+          <AuthProvider>
+            <div className="w-full px-4 py-2 flex justify-between gap-2 bg-amber-200 dark:bg-slate-900">
+              <div className="flex gap-6 items-center">
+                {menus.map((menu) => (
+                  <a
+                    key={menu.name}
+                    href={menu.path}
+                    className="text-md hover:animate-bounce font-medium hover:font-bold"
+                  >
+                    {menu.name}
+                  </a>
+                ))}
+              </div>
+              <div className="flex gap-4 items-center">
+                <UserHeader />
+                <ThemeSwitcher />
+              </div>
             </div>
-            <ThemeSwitcher />
-          </div>
-          <div className="p-2">{children}</div>
+            <div className="p-2">{children}</div>
+          </AuthProvider>
         </ThemeProvider>
       </body>
     </html>
