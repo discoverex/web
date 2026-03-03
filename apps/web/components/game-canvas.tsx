@@ -1,5 +1,6 @@
 'use client';
 
+import { userAgent } from 'next/server';
 import { useEffect, useRef, useState } from 'react';
 
 // --- 인터페이스 정의 ---
@@ -37,9 +38,10 @@ export default function GameCanvas() {
     { id: 'item_03', x: 700, y: 400 },
   ]);
 
+  const [isThrottled, setIsThrottled] = useState(false);
   const workerRef = useRef<Worker | null>(null);
   const lastClickTime = useRef<number>(0);
-  const THROTTLE_TIME = 300; 
+  const THROTTLE_TIME = 500; 
 
   // --- 백엔드 전송 함수 (FastAPI) ---
   const sendLogToBackend = async (logData: LogEntry) => {
@@ -69,23 +71,23 @@ export default function GameCanvas() {
 
         // 2. 워커 응답 처리 및 백엔드 전송
         workerRef.current.onmessage = (e: MessageEvent) => {
-        const { eventId, distances } = e.data;
+            const { eventId, distances } = e.data;
 
-        setLogs((prev) => {
-            const updatedLogs = prev.map((log) => {
-            if (log.event_id === eventId) {
-                const isHit = distances.some((d: any) => d.distance < 30);
-                const updatedLog: LogEntry = { 
-                ...log, 
-                distances_to_remaining_targets: distances, 
-                result_type: isHit ? 'HIT' : 'MISS' 
-                };
-                
-                // 데이터가 완성된 시점에 백엔드로 전송
-                sendLogToBackend(updatedLog); 
-                return updatedLog;
-            }
-            return log;
+            setLogs((prev) => {
+                const updatedLogs = prev.map((log) => {
+                if (log.event_id === eventId) {
+                    const isHit = distances.some((d: any) => d.distance < 30);
+                    const updatedLog: LogEntry = { 
+                    ...log, 
+                    distances_to_remaining_targets: distances, 
+                    result_type: isHit ? 'HIT' : 'MISS' 
+                    };
+                    
+                    // 데이터가 완성된 시점에 백엔드로 전송
+                    sendLogToBackend(updatedLog); 
+                    return updatedLog;
+                }
+                return log;
             })
             return updatedLogs;
         });
@@ -100,9 +102,17 @@ export default function GameCanvas() {
   const handleClick = (e: React.MouseEvent<HTMLDivElement>) => {
     const now = Date.now();
 
-    // 3. 제공해주신 스로틀링 로직 적용
+    // 3. 스로틀링 로직 적용
     if (now - lastClickTime.current < THROTTLE_TIME) return;
     lastClickTime.current = now;
+
+    // 클릭 직후 스로틀링 상태 활성화
+    setIsThrottled(true);
+
+    // Throttle_time 후에 스로틀링 상태 해제
+    setTimeout(() => {
+        setIsThrottled(false);
+    }, THROTTLE_TIME);
 
     // 4. 좌표 계산 및 로그 생성
     const rect = e.currentTarget.getBoundingClientRect();
@@ -112,7 +122,7 @@ export default function GameCanvas() {
     const eventId = crypto.randomUUID();
     const newLog: LogEntry = {
       event_id: eventId,
-      user_id: "user_123", // 실제 유저 ID로 교체 필요
+      user_id: "",
       game_id: "discoverex_map_01",
       click_coordinate: { x, y },
       timestamp: new Date().toISOString(),
@@ -133,13 +143,14 @@ export default function GameCanvas() {
   return (
     <div className="flex flex-col items-center w-full p-4 bg-slate-900 min-h-screen text-white">
         <div
-        onClick={handleClick}
-        className="relative w-full max-w-4xl h-[500px] bg-slate-800 border-4 border-slate-700 rounded-xl cursor-crosshair overflow-hidden shadow-2xl"
-        style={{
-            backgroundImage: `url('https://images.unsplash.com/photo-1614728263952-84ea256f9679?auto=format&fit=crop&q=80&w=1000')`,
-            backgroundSize: 'cover',
-            backgroundPosition: 'center'
-        }}
+            onClick={handleClick}
+            className={`relative w-full h-[500px] bg-slate-800 border-4 border-slate-700 rounded-xl overflow-hidden shadow-2xl transition-all ${
+          isThrottled ? 'cursor-not-allowed opacity-80' : 'cursor-default'}`}
+            style={{
+                backgroundImage: `url('https://images.unsplash.com/photo-1614728263952-84ea256f9679?auto=format&fit=crop&q=80&w=1000')`,
+                backgroundSize: 'cover',
+                backgroundPosition: 'center'
+            }}
         >
         {/* 타겟 위치 시각화 (테스트용) */}
         {remainingTargets.map((t) => (
