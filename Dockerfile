@@ -32,6 +32,7 @@ FROM node:20-alpine AS runner
 WORKDIR /app
 
 ENV NODE_ENV=production
+# 아래 기본 포트는 외부 주입 PORT로 덮어씌워지게 됨
 ENV PORT=8080
 # Next.js standalone은 HOSTNAME을 0.0.0.0으로 잡아야 외부에서 접근 가능
 ENV HOSTNAME="0.0.0.0"
