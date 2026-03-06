@@ -5,7 +5,7 @@ RUN npm install -g turbo
 WORKDIR /app
 COPY . .
 # 'web' 앱만 추출
-RUN turbo prune --scope=web --out=full
+RUN turbo prune --scope=web --docker
 
 # 2. Build stage
 FROM node:20-alpine AS installer
