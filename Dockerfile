@@ -1,33 +1,33 @@
-# 1. 빌드 스테이지
-FROM node:20-slim AS build
-
-# pnpm 활성화
-RUN corepack enable && corepack prepare pnpm@latest --activate
-
+# 1. Prune stage
+FROM node:20-alpine AS builder
+RUN apk add --no-cache libc6-compat
+RUN npm install -g turbo
 WORKDIR /app
-
-# 모노레포 전체의 설정 파일 복사 (의존성 캐시용)
-COPY pnpm-lock.yaml package.json pnpm-workspace.yaml ./
-# 각 패키지의 package.json들도 복사해야 합니다
-COPY apps/web/package.json ./apps/web/
-COPY packages/ ./packages/ 
-
-# 의존성 설치
-RUN pnpm install --frozen-lockfile
-
-# 전체 소스 복사 및 web 앱 빌드
 COPY . .
-RUN pnpm --filter web build
+# 'web' 앱만 추출
+RUN turbo prune --scope=web --out=full
 
-# 2. 실행 스테이지 (Nginx)
-FROM nginx:stable-alpine
+# 2. Build stage
+FROM node:20-alpine AS installer
+WORKDIR /app
+COPY --from=builder /app/out/json/ .
+COPY --from=builder /app/out/pnpm-lock.yaml ./pnpm-lock.yaml
+RUN corepack enable && pnpm install
 
-# 빌드 결과물 위치 확인: 보통 apps/web/dist에 생성됩니다
-COPY --from=build /app/apps/web/dist /usr/share/nginx/html
+COPY --from=builder /app/out/full/ .
+RUN pnpm turbo build --filter=web
 
-# 포트 설정 (9123)
-RUN sed -i 's/80/9123/g' /etc/nginx/conf.d/default.conf
+# 3. Runner stage
+FROM node:20-alpine AS runner
+WORKDIR /app
+# 배포 시 외부(GCP)에서 주입하는 PORT가 아래 기본 포트 8080을 덮어씀
+ENV PORT 8080
+ENV NODE_ENV production
 
-EXPOSE 9123
+COPY --from=installer /app/apps/web/next.config.js .
+COPY --from=installer /app/apps/web/package.json .
+COPY --from=installer /app/apps/web/.next ./.next
+COPY --from=installer /app/apps/web/public ./public
+COPY --from=installer /app/node_modules ./node_modules
 
-CMD ["nginx", "-g", "daemon off;"]
+CMD ["node", "apps/web/server.js"]
