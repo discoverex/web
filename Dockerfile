@@ -6,24 +6,28 @@ RUN corepack enable && corepack prepare pnpm@latest --activate
 
 WORKDIR /app
 
-# 패키지 설치 최적화
-COPY pnpm-lock.yaml package.json ./
+# 모노레포 전체의 설정 파일 복사 (의존성 캐시용)
+COPY pnpm-lock.yaml package.json pnpm-workspace.yaml ./
+# 각 패키지의 package.json들도 복사해야 합니다
+COPY apps/web/package.json ./apps/web/
+COPY packages/ ./packages/ 
+
+# 의존성 설치
 RUN pnpm install --frozen-lockfile
 
-# 소스 코드 복사 및 빌드
+# 전체 소스 복사 및 web 앱 빌드
 COPY . .
-RUN pnpm build
+RUN pnpm --filter web build
 
 # 2. 실행 스테이지 (Nginx)
 FROM nginx:stable-alpine
 
-# 빌드 결과물 복사
-COPY --from=build /app/dist /usr/share/nginx/html
+# 빌드 결과물 위치 확인: 보통 apps/web/dist에 생성됩니다
+COPY --from=build /app/apps/web/dist /usr/share/nginx/html
 
-# [중요] Nginx 기본 포트를 80에서 9123으로 변경
+# 포트 설정 (9123)
 RUN sed -i 's/80/9123/g' /etc/nginx/conf.d/default.conf
 
-# 컨테이너 외부로 노출할 포트 명시
 EXPOSE 9123
 
 CMD ["nginx", "-g", "daemon off;"]
