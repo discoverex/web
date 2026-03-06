@@ -1,5 +1,5 @@
-import { FirebaseApp, getApps, initializeApp } from 'firebase/app';
-import { getAuth } from 'firebase/auth';
+import { FirebaseApp, getApps, getApp, initializeApp } from 'firebase/app';
+import { getAuth, Auth } from 'firebase/auth';
 
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
@@ -10,31 +10,26 @@ const firebaseConfig = {
   appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
 };
 
-// 브라우저 환경에서만 상세 로깅 수행
-if (typeof window !== 'undefined') {
-  console.log('--- Firebase 초기화 디버깅 시작 ---');
-  const missingKeys = Object.entries(firebaseConfig)
-    .filter(([, value]) => !value)
-    .map(([key]) => key);
+// 1. 서버 사이드(빌드 시점) 에러를 방지하기 위해
+// 실제 초기화는 브라우저에서만 진행하되, 타입은 Auth로 고정합니다.
+let app: FirebaseApp;
+let auth: Auth;
 
-  if (missingKeys.length > 0) {
-    console.error('❌ 다음 환경 변수가 누락되었습니다:', missingKeys);
-    console.warn('현재 로드된 process.env 확인 (일부):', {
-      API_KEY_EXISTS: !!process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
-      PROJECT_ID_EXISTS: !!process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
-    });
-  } else {
-    console.log('✅ 모든 Firebase 설정값이 로드되었습니다.');
-    // API Key의 앞/뒤 3글자만 노출하여 실제 값이 들어왔는지 확인
-    const key = firebaseConfig.apiKey || '';
-    console.log(`API Key 확인: ${key.slice(0, 3)}...${key.slice(-3)}`);
+if (typeof window !== 'undefined') {
+  app = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
+  auth = getAuth(app);
+
+  // 디버깅 로그 (필요 없으면 나중에 삭제)
+  if (!firebaseConfig.apiKey) {
+    console.warn('❌ Firebase API Key가 없습니다. Cloud Run 설정을 확인하세요.');
   }
-  console.log('--- Firebase 초기화 디버깅 종료 ---');
+} else {
+  // 서버 사이드일 때는 가짜 객체(Proxy)를 넘겨서
+  // 다른 파일에서 auth.onAuthStateChanged 등을 호출해도 에러가 안 나게 합니다.
+  auth = {
+    onAuthStateChanged: () => () => {},
+    signOut: () => Promise.resolve(),
+  } as unknown as Auth;
 }
 
-const app: FirebaseApp = getApps().length > 0 ? getApps()[0]! : initializeApp(firebaseConfig);
-
-const auth = getAuth(app);
-
-export { app, auth };
-export default app;
+export { auth };
