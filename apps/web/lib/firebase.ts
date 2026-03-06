@@ -1,5 +1,5 @@
-import { initializeApp, getApps, FirebaseApp } from 'firebase/app';
-import { getAuth, Auth } from 'firebase/auth';
+import { FirebaseApp, getApps, initializeApp } from 'firebase/app';
+import { getAuth } from 'firebase/auth';
 
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
@@ -14,7 +14,7 @@ const firebaseConfig = {
 if (typeof window !== 'undefined') {
   console.log('--- Firebase 초기화 디버깅 시작 ---');
   const missingKeys = Object.entries(firebaseConfig)
-    .filter(([_, value]) => !value)
+    .filter(([, value]) => !value)
     .map(([key]) => key);
 
   if (missingKeys.length > 0) {
@@ -32,12 +32,7 @@ if (typeof window !== 'undefined') {
   console.log('--- Firebase 초기화 디버깅 종료 ---');
 }
 
-let app: FirebaseApp;
-if (getApps().length === 0) {
-  app = initializeApp(firebaseConfig);
-} else {
-  app = getApps()[0];
-}
+const app: FirebaseApp = getApps().length > 0 ? getApps()[0]! : initializeApp(firebaseConfig);
 
 const auth = getAuth(app);
 
