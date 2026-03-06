@@ -57,7 +57,6 @@ jobs:
             --image asia-northeast3-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/apps/web:${{ github.sha }} \
             --region asia-northeast3 \
             --port ${{ secrets.WEB_PORT }} \
-            --set-env-vars PORT=${{ secrets.WEB_PORT }} \
             --platform managed \
             --quiet \
             --allow-unauthenticated
