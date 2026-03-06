@@ -4,30 +4,43 @@ RUN apk add --no-cache libc6-compat
 RUN npm install -g turbo
 WORKDIR /app
 COPY . .
-# 'web' 앱만 추출
 RUN turbo prune --scope=web --docker
 
 # 2. Build stage
 FROM node:20-alpine AS installer
+RUN apk add --no-cache libc6-compat
 WORKDIR /app
+
+# pnpm 및 빌드 설정
+ENV PNPM_HOME="/pnpm"
+ENV PATH="$PNPM_HOME:$PATH"
+RUN corepack enable
+
+# 의존성 설치 (캐싱 활용)
 COPY --from=builder /app/out/json/ .
 COPY --from=builder /app/out/pnpm-lock.yaml ./pnpm-lock.yaml
-RUN corepack enable && pnpm install
+RUN pnpm install --frozen-lockfile
 
+# 전체 소스 복사 및 빌드
 COPY --from=builder /app/out/full/ .
+# 빌드 시 텔레메트리 비활성화 (권장)
+ENV NEXT_TELEMETRY_DISABLED=1
 RUN pnpm turbo build --filter=web
 
 # 3. Runner stage
 FROM node:20-alpine AS runner
 WORKDIR /app
-# 배포 시 외부(GCP)에서 주입하는 PORT가 아래 기본 포트 8080을 덮어씀
-ENV PORT 8080
-ENV NODE_ENV production
 
-COPY --from=installer /app/apps/web/next.config.js .
-COPY --from=installer /app/apps/web/package.json .
-COPY --from=installer /app/apps/web/.next ./.next
-COPY --from=installer /app/apps/web/public ./public
-COPY --from=installer /app/node_modules ./node_modules
+ENV NODE_ENV=production
+ENV PORT=8080
+# Next.js standalone은 HOSTNAME을 0.0.0.0으로 잡아야 외부에서 접근 가능
+ENV HOSTNAME="0.0.0.0"
 
+# standalone 모드에서는 빌드 결과물 폴더 구조가 바뀜
+# .next/standalone 폴더 내용물을 루트로 변경
+COPY --from=installer /app/apps/web/public ./apps/web/public
+COPY --from=installer /app/apps/web/.next/standalone ./
+COPY --from=installer /app/apps/web/.next/static ./apps/web/.next/static
+
+# standalone 빌드 결과는 Turborepo 구조에 따라 다를 수 있으니 아래 실행파일 경로 확인
 CMD ["node", "apps/web/server.js"]
