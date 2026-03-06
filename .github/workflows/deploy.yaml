@@ -39,6 +39,12 @@ jobs:
           # 이미지 빌드 (프론트엔드 앱 이름으로 태깅)
           docker build \
             --build-arg PORT=${{ secrets.WEB_PORT }} \
+            --build-arg NEXT_PUBLIC_FIREBASE_API_KEY=${{ secrets.NEXT_PUBLIC_FIREBASE_API_KEY }} \
+            --build-arg NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=${{ secrets.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN }} \
+            --build-arg NEXT_PUBLIC_FIREBASE_PROJECT_ID=${{ secrets.NEXT_PUBLIC_FIREBASE_PROJECT_ID }} \
+            --build-arg NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=${{ secrets.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET }} \
+            --build-arg NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=${{ secrets.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID }} \
+            --build-arg NEXT_PUBLIC_FIREBASE_APP_ID=${{ secrets.NEXT_PUBLIC_FIREBASE_APP_ID }} \
             -t asia-northeast3-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/apps/web:${{ github.sha }} .
           
           # 이미지 푸시
