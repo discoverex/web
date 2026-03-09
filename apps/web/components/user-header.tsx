@@ -18,9 +18,9 @@ export default function UserHeader() {
             </button>
           </div>
           <div className="avatar">
-            <div className="w-8 rounded-full ring ring-primary ring-offset-base-100 ring-offset-2">
+            <div className="relative w-8 rounded-full ring ring-primary ring-offset-base-100 ring-offset-2 overflow-hidden">
               {user.photoURL ? (
-                <Image src={user.photoURL} alt="profile" />
+                <Image src={user.photoURL} fill alt="profile" className='object-cover rounded full' />
               ) : (
                 <div className="bg-neutral text-neutral-content w-full h-full flex items-center justify-center">
                   <span>{user.email?.[0]?.toUpperCase() ?? ''}</span>
