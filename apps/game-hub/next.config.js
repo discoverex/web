@@ -1,7 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   output: 'standalone',
-  transpilePackages: ['@repo/quiz-magic-eye'],
   async headers() {
     return [
       {
@@ -16,8 +15,8 @@ const nextConfig = {
     ];
   },
 
-images: {
-  remotePatterns: [
+  images: {
+    remotePatterns: [
       {
         protocol: 'https',
         hostname: 'lh3.googleusercontent.com',

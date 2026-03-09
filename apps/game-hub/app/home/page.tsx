@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { useAuth } from '../../context/auth-context';
 
-export default function Home() {
+export default function Home(): React.ReactElement {
   const { user } = useAuth();
 
   return (

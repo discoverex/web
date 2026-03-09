@@ -4,7 +4,7 @@ RUN apk add --no-cache libc6-compat
 RUN npm install -g turbo
 WORKDIR /app
 COPY . .
-RUN turbo prune --scope=web --docker
+RUN turbo prune --scope=game-hub --docker
 
 # 2. Build stage
 FROM node:20-alpine AS installer
@@ -43,7 +43,7 @@ RUN pnpm install --frozen-lockfile
 COPY --from=builder /app/out/full/ .
 # 빌드 시 텔레메트리 비활성화 (권장)
 ENV NEXT_TELEMETRY_DISABLED=1
-RUN pnpm turbo build --filter=web
+RUN pnpm turbo build --filter=game-hub
 
 # 3. Runner stage
 FROM node:20-alpine AS runner
