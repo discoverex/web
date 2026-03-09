@@ -6,26 +6,19 @@ import { ThemeProvider } from 'next-themes';
 import ThemeSwitcher from '../components/theme-switcher';
 import { AuthProvider } from '../context/auth-context';
 import UserHeader from '../components/user-header';
+import React from 'react';
 
-const geistSans = localFont({
-  src: './fonts/GeistVF.woff',
-  variable: '--font-geist-sans',
-});
-const geistMono = localFont({
-  src: './fonts/GeistMonoVF.woff',
-  variable: '--font-geist-mono',
-});
 const pretendard = localFont({
   src: [
-    {path: './fonts/Pretendard-Black.otf', weight: '400'},
-    {path: './fonts/Pretendard-Bold.otf', weight: '500'},
-    {path: './fonts/Pretendard-ExtraBold.otf', weight: '600'},
-    {path: './fonts/Pretendard-Light.otf', weight: '100'},
-    {path: './fonts/Pretendard-ExtraLight.otf', weight: '0'},
-    {path: './fonts/Pretendard-Regular.otf', weight: '300'},
-    {path: './fonts/Pretendard-Medium.otf', weight: '200'},
-    {path: './fonts/Pretendard-SemiBold.otf', weight: '450'},
-    {path: './fonts/Pretendard-Thin.otf', weight: '100'},
+    { path: './fonts/Pretendard-Black.otf', weight: '400' },
+    { path: './fonts/Pretendard-Bold.otf', weight: '500' },
+    { path: './fonts/Pretendard-ExtraBold.otf', weight: '600' },
+    { path: './fonts/Pretendard-Light.otf', weight: '100' },
+    { path: './fonts/Pretendard-ExtraLight.otf', weight: '0' },
+    { path: './fonts/Pretendard-Regular.otf', weight: '300' },
+    { path: './fonts/Pretendard-Medium.otf', weight: '200' },
+    { path: './fonts/Pretendard-SemiBold.otf', weight: '450' },
+    { path: './fonts/Pretendard-Thin.otf', weight: '100' },
   ],
   variable: '--font-pretendard',
 });
@@ -39,7 +32,7 @@ export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
-}>) {
+}>): React.ReactElement {
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={`${pretendard.variable} font-sans h-screen w-screen`}>

@@ -1,15 +1,15 @@
 'use client';
 
-import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
-import { 
-  User, 
-  onAuthStateChanged, 
-  signInWithPopup, 
-  GoogleAuthProvider, 
+import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
+import {
+  User,
+  onAuthStateChanged,
+  signInWithPopup,
+  GoogleAuthProvider,
   signOut,
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
-  updateProfile
+  updateProfile,
 } from 'firebase/auth';
 import { auth } from '../lib/firebase';
 import apiClient from '../lib/api-client';
@@ -25,7 +25,7 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-export function AuthProvider({ children }: { children: ReactNode }) {
+export function AuthProvider({ children }: { children: ReactNode }): React.ReactElement {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -37,7 +37,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return response.data;
     } catch (error: any) {
       console.error('백엔드 인증 실패:', error.response?.status || error.message);
-      
+
       // 401(Unauthorized) 또는 403(Forbidden) 에러 발생 시 로그아웃 처리
       if (error.response?.status === 401 || error.response?.status === 403) {
         console.warn('권한이 없거나 토큰이 유효하지 않아 로그아웃 처리합니다.');
@@ -51,7 +51,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
       setUser(firebaseUser);
       setLoading(false);
-      
+
       if (firebaseUser) {
         // Firebase 로그인은 성공했으나 백엔드 인증을 시도합니다.
         await fetchMyInfoFromBackend();

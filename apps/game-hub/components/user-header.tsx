@@ -1,10 +1,11 @@
 'use client';
 
+import React from 'react';
 import { useAuth } from '../context/auth-context';
 import Link from 'next/link';
 import Image from 'next/image';
 
-export default function UserHeader() {
+export default function UserHeader(): React.JSX.Element {
   const { user, logout } = useAuth();
 
   return (
@@ -20,7 +21,7 @@ export default function UserHeader() {
           <div className="avatar">
             <div className="relative w-8 rounded-full ring ring-primary ring-offset-base-100 ring-offset-2 overflow-hidden">
               {user.photoURL ? (
-                <Image src={user.photoURL} fill alt="profile" className='object-cover rounded full' />
+                <Image src={user.photoURL} fill alt="profile" className="object-cover rounded full" />
               ) : (
                 <div className="bg-neutral text-neutral-content w-full h-full flex items-center justify-center">
                   <span>{user.email?.[0]?.toUpperCase() ?? ''}</span>
