@@ -1,11 +1,33 @@
 'use client';
 
 import React from 'react';
-import Link from 'next/link';
-import { useAuth } from '../../context/auth-context';
+import { useAuth, auth } from '@repo/ui/auth';
+import { menus } from '../consts/menus';
 
 export default function Home(): React.ReactElement {
   const { user } = useAuth();
+
+  const handleGameStart = async (menuName: string) => {
+    const menu = menus.find(m => m.name === menuName);
+    if (!menu) return;
+
+    let finalPath = menu.path;
+    const currentUser = auth.currentUser;
+    
+    if (currentUser) {
+      const token = await currentUser.getIdToken();
+      const separator = finalPath.includes('?') ? '&' : '?';
+      finalPath = `${finalPath}${separator}sso_token=${token}`;
+    } else {
+      const ssoToken = window.sessionStorage.getItem('sso_token');
+      if (ssoToken) {
+        const separator = finalPath.includes('?') ? '&' : '?';
+        finalPath = `${finalPath}${separator}sso_token=${ssoToken}`;
+      }
+    }
+    
+    window.location.href = finalPath;
+  };
 
   return (
     <div className="flex flex-col items-center justify-center min-h-[80vh] text-center space-y-8">
@@ -19,18 +41,18 @@ export default function Home(): React.ReactElement {
 
       {user ? (
         <div className="flex gap-4">
-          <Link href="/discoverex" className="btn btn-primary btn-lg">
+          <button onClick={() => handleGameStart('렉스를 찾아라!')} className="btn btn-primary btn-lg">
             게임 시작하기 (렉스를 찾아라!)
-          </Link>
-          <Link href="/quiz-magic-eye" className="btn btn-secondary btn-lg">
+          </button>
+          <button onClick={() => handleGameStart('퀴즈 매직아이')} className="btn btn-secondary btn-lg">
             퀴즈 매직아이 도전
-          </Link>
+          </button>
         </div>
       ) : (
         <div className="flex flex-col items-center gap-4">
-          <Link href="/login" className="btn btn-primary btn-wide btn-lg shadow-lg">
+          <button onClick={() => window.location.href = '/login'} className="btn btn-primary btn-wide btn-lg shadow-lg">
             지금 바로 시작하기
-          </Link>
+          </button>
           <p className="text-sm opacity-70 italic">게임을 즐기려면 로그인이 필요합니다.</p>
         </div>
       )}

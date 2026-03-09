@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { useAuth } from '../context/auth-context';
+import { useAuth } from '@repo/ui/auth';
 import Link from 'next/link';
 import Image from 'next/image';
 

@@ -20,6 +20,9 @@ importers:
 
   apps/discoverex:
     dependencies:
+      '@repo/ui':
+        specifier: workspace:*
+        version: link:../../packages/ui
       next:
         specifier: 16.1.6
         version: 16.1.6(@babel/core@7.29.0)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
@@ -118,6 +121,9 @@ importers:
 
   apps/magic-eye:
     dependencies:
+      '@repo/ui':
+        specifier: workspace:*
+        version: link:../../packages/ui
       next:
         specifier: 16.1.6
         version: 16.1.6(@babel/core@7.29.0)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
@@ -193,6 +199,12 @@ importers:
 
   packages/ui:
     dependencies:
+      axios:
+        specifier: ^1.13.5
+        version: 1.13.5
+      firebase:
+        specifier: ^12.9.0
+        version: 12.9.0
       react:
         specifier: ^19.2.0
         version: 19.2.0

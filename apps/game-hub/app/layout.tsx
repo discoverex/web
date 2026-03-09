@@ -1,10 +1,11 @@
-import type { Metadata } from 'next';
+'use client';
+
 import localFont from 'next/font/local';
 import './globals.css';
 import { menus } from './consts/menus';
 import { ThemeProvider } from 'next-themes';
 import ThemeSwitcher from '../components/theme-switcher';
-import { AuthProvider } from '../context/auth-context';
+import { AuthProvider, auth } from '@repo/ui/auth';
 import UserHeader from '../components/user-header';
 import React from 'react';
 
@@ -23,16 +24,35 @@ const pretendard = localFont({
   variable: '--font-pretendard',
 });
 
-export const metadata: Metadata = {
-  title: 'Welcome to Vision AI GAMES World!',
-  description: '비전 AI를 활용한 게임들을 모아둔 허브입니다.',
-};
-
 export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>): React.ReactElement {
+  
+  const handleSSOLink = async (e: React.MouseEvent<HTMLAnchorElement>, path: string, isExternal?: boolean) => {
+    if (!isExternal) return;
+    
+    e.preventDefault();
+    const user = auth.currentUser;
+    let finalPath = path;
+    
+    if (user) {
+      const token = await user.getIdToken();
+      const separator = finalPath.includes('?') ? '&' : '?';
+      finalPath = `${finalPath}${separator}sso_token=${token}`;
+    } else {
+      // Firebase User가 없어도 sessionStorage에 토큰이 있다면 사용
+      const ssoToken = window.sessionStorage.getItem('sso_token');
+      if (ssoToken) {
+        const separator = finalPath.includes('?') ? '&' : '?';
+        finalPath = `${finalPath}${separator}sso_token=${ssoToken}`;
+      }
+    }
+    
+    window.location.href = finalPath;
+  };
+
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={`${pretendard.variable} font-sans h-screen w-screen`}>
@@ -44,6 +64,7 @@ export default function RootLayout({
                   <a
                     key={menu.name}
                     href={menu.path}
+                    onClick={(e) => handleSSOLink(e, menu.path, (menu as any).isExternal)}
                     className="text-md hover:animate-bounce font-medium hover:font-bold"
                   >
                     {menu.name}
