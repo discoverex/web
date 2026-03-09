@@ -12,7 +12,9 @@
     "next": "16.1.6",
     "react": "19.2.3",
     "react-dom": "19.2.3",
-    "@repo/ui": "workspace:*"
+    "@repo/ui": "workspace:*",
+    "next-themes": "^0.4.6",
+    "daisyui": "^5.5.19"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",

@@ -2,18 +2,18 @@
 
 import React from 'react';
 import { useAuth, auth } from '@repo/ui/auth';
-import { menus } from '../consts/menus';
+import { menus } from '@repo/ui/navbar';
 
 export default function Home(): React.ReactElement {
   const { user } = useAuth();
 
   const handleGameStart = async (menuName: string) => {
-    const menu = menus.find(m => m.name === menuName);
+    const menu = menus.find((m) => m.name === menuName);
     if (!menu) return;
 
     let finalPath = menu.path;
     const currentUser = auth.currentUser;
-    
+
     if (currentUser) {
       const token = await currentUser.getIdToken();
       const separator = finalPath.includes('?') ? '&' : '?';
@@ -25,7 +25,7 @@ export default function Home(): React.ReactElement {
         finalPath = `${finalPath}${separator}sso_token=${ssoToken}`;
       }
     }
-    
+
     window.location.href = finalPath;
   };
 
@@ -50,7 +50,10 @@ export default function Home(): React.ReactElement {
         </div>
       ) : (
         <div className="flex flex-col items-center gap-4">
-          <button onClick={() => window.location.href = '/login'} className="btn btn-primary btn-wide btn-lg shadow-lg">
+          <button
+            onClick={() => (window.location.href = '/login')}
+            className="btn btn-primary btn-wide btn-lg shadow-lg"
+          >
             지금 바로 시작하기
           </button>
           <p className="text-sm opacity-70 italic">게임을 즐기려면 로그인이 필요합니다.</p>

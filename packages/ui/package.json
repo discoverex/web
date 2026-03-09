@@ -4,7 +4,8 @@
   "private": true,
   "exports": {
     "./*": "./src/*.tsx",
-    "./auth": "./src/auth/index.ts"
+    "./auth": "./src/auth/index.ts",
+    "./navbar": "./src/navbar/index.ts"
   },
   "scripts": {
     "lint": "eslint . --max-warnings 0",
@@ -21,9 +22,12 @@
     "typescript": "5.9.2"
   },
   "dependencies": {
-    "react": "^19.2.0",
-    "react-dom": "^19.2.0",
+    "axios": "^1.13.5",
     "firebase": "^12.9.0",
-    "axios": "^1.13.5"
+    "lucide-react": "^0.474.0",
+    "next": "^16.1.6",
+    "next-themes": "^0.4.6",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0"
   }
 }

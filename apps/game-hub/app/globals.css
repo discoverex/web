@@ -1,5 +1,12 @@
-@import "tailwindcss";
+@import 'tailwindcss';
 @custom-variant dark (&:where([data-theme=dark], [data-theme=dark] *));
 @plugin "daisyui" {
-  themes: light --default, dark --prefersdark;
+  themes:
+    light --default,
+    dark --prefersdark;
+}
+
+body {
+  font-family: var(--font-pretendard, ui-sans-serif, system-ui);
+  @apply bg-base-100 text-base-content min-h-screen transition-colors duration-200;
 }
