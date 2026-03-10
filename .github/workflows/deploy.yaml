@@ -25,7 +25,6 @@ jobs:
       - uses: dorny/paths-filter@v3
         id: filter
         with:
-          # 각 앱별로 감지할 경로를 명확히 지정합니다.
           filters: |
             game-hub:
               - 'apps/game-hub/**'
@@ -50,29 +49,24 @@ jobs:
               - 'Dockerfile'
 
       - id: set-apps
-        name: Create clean JSON array of changed apps
         run: |
-          # 빈 배열로 시작
-          APPS=$(echo "[]" | jq -c .)
+          # 1. 수동 실행(workflow_dispatch)인 경우 모든 앱 포함
+          if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
+            echo 'apps=["game-hub", "discoverex", "magic-eye"]' >> $GITHUB_OUTPUT
+          else
+            # 2. Push 실행인 경우 변경된 앱만 필터링 (빈 값 방지 로직)
+            APPS=$(echo "[]" | jq -c .)
+            if [ "${{ steps.filter.outputs.game-hub }}" == 'true' ]; then APPS=$(echo "$APPS" | jq -c '. += ["game-hub"]'); fi
+            if [ "${{ steps.filter.outputs.discoverex }}" == 'true' ]; then APPS=$(echo "$APPS" | jq -c '. += ["discoverex"]'); fi
+            if [ "${{ steps.filter.outputs.magic-eye }}" == 'true' ]; then APPS=$(echo "$APPS" | jq -c '. += ["magic-eye"]'); fi
           
-          # 각 필터가 true인 경우에만 배열에 추가 (jq 활용)
-          if [ "${{ steps.filter.outputs.game-hub }}" == 'true' ]; then
-            APPS=$(echo "$APPS" | jq -c '. += ["game-hub"]')
+            # 3. 만약 변경된 앱이 하나도 없다면 빈 배열 유지
+            echo "apps=$APPS" >> $GITHUB_OUTPUT
           fi
-          
-          if [ "${{ steps.filter.outputs.discoverex }}" == 'true' ]; then
-            APPS=$(echo "$APPS" | jq -c '. += ["discoverex"]')
-          fi
-          
-          if [ "${{ steps.filter.outputs.magic-eye }}" == 'true' ]; then
-            APPS=$(echo "$APPS" | jq -c '. += ["magic-eye"]')
-          fi
-          
-          # 최종 결과 출력 (이 값이 matrix로 들어갑니다)
-          echo "apps=$APPS" >> $GITHUB_OUTPUT
 
   deploy:
     needs: filter
+    # matrix.app이 비어있지 않고, 실제 앱 이름이 담겼을 때만 실행
     if: ${{ needs.filter.outputs.apps != '[]' && needs.filter.outputs.apps != '' }}
     runs-on: ubuntu-latest
     strategy:
