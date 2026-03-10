@@ -50,6 +50,7 @@ export function AuthProvider({
           uid: backendUser.id || prev?.uid,
           email: backendUser.email || prev?.email,
           displayName: backendUser.name || prev?.displayName,
+          photoURL: backendUser.photoURL || backendUser.profile_image || prev?.photoURL,
           ...backendUser,
         }));
       }
