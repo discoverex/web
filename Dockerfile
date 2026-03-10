@@ -1,11 +1,11 @@
 # 1. Prune stage
 FROM node:20-alpine AS builder
 RUN apk add --no-cache libc6-compat
-RUN npm install -g turbo
+# 전역 설치 대신 npx를 사용하여 프로젝트의 turbo 버전을 따르도록 함
 WORKDIR /app
 COPY . .
 ARG APP_NAME
-RUN turbo prune --scope=${APP_NAME} --docker
+RUN npx turbo prune --scope=${APP_NAME} --docker
 
 # 2. Build stage
 FROM node:20-alpine AS installer
@@ -44,7 +44,7 @@ RUN pnpm install --frozen-lockfile
 # 전체 소스 복사 및 빌드
 COPY --from=builder /app/out/full/ .
 ENV NEXT_TELEMETRY_DISABLED=1
-RUN pnpm turbo build --filter=${APP_NAME}
+RUN pnpm exec turbo build --filter=${APP_NAME}
 
 # 3. Runner stage
 FROM node:20-alpine AS runner
