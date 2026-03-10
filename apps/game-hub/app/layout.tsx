@@ -1,8 +1,7 @@
-'use client';
-
+import type { Metadata } from 'next';
 import localFont from 'next/font/local';
 import './globals.css';
-import { ThemeProvider } from 'next-themes';
+import { ThemeProvider } from '@repo/ui/navbar';
 import { AuthProvider } from '@repo/ui/auth';
 import { GlobalNavbar } from '@repo/ui/navbar';
 import React from 'react';
@@ -22,6 +21,11 @@ const pretendard = localFont({
   variable: '--font-pretendard',
 });
 
+export const metadata: Metadata = {
+  title: 'Vision AI Games - Hub',
+  description: 'AI 기반 게임들의 메인 허브',
+};
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -31,7 +35,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={`${pretendard.variable} font-sans min-h-screen w-full bg-base-100`}>
-        <ThemeProvider attribute="data-theme" defaultTheme="dark">
+        <ThemeProvider attribute="data-theme" defaultTheme="dark" enableSystem={false}>
           <AuthProvider>
             <GlobalNavbar />
             <main className="p-4">{children}</main>

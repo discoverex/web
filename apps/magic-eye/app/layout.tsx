@@ -2,8 +2,7 @@ import React from "react";
 import type { Metadata } from "next";
 import "./globals.css";
 import { AuthProvider } from "@repo/ui/auth";
-import { GlobalNavbar } from "@repo/ui/navbar";
-import { ThemeProvider } from "next-themes";
+import { GlobalNavbar, ThemeProvider } from "@repo/ui/navbar";
 import localFont from "next/font/local";
 
 const pretendard = localFont({
@@ -36,7 +35,7 @@ export default function RootLayout({
       <body
         className={`${pretendard.variable} font-sans min-h-screen w-full bg-base-100`}
       >
-        <ThemeProvider attribute="data-theme" defaultTheme="dark">
+        <ThemeProvider attribute="data-theme" defaultTheme="dark" enableSystem={false}>
           <AuthProvider>
             <GlobalNavbar />
             <main className="p-4">{children}</main>
