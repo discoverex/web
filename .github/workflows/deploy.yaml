@@ -13,12 +13,13 @@ jobs:
   filter:
     runs-on: ubuntu-latest
     outputs:
-      apps: ${{ steps.filter.outputs.changes }}
+      apps: ${{ steps.set-apps.outputs.apps }}
     steps:
       - uses: actions/checkout@v4
       - uses: dorny/paths-filter@v3
         id: filter
         with:
+          # 각 앱별로 감지할 경로를 명확히 지정합니다.
           filters: |
             game-hub:
               - 'apps/game-hub/**'
@@ -41,6 +42,28 @@ jobs:
               - 'pnpm-lock.yaml'
               - 'turbo.json'
               - 'Dockerfile'
+
+      - id: set-apps
+        name: Create clean JSON array of changed apps
+        run: |
+          # 빈 배열로 시작
+          APPS=$(echo "[]" | jq -c .)
+          
+          # 각 필터가 true인 경우에만 배열에 추가 (jq 활용)
+          if [ "${{ steps.filter.outputs.game-hub }}" == 'true' ]; then
+            APPS=$(echo "$APPS" | jq -c '. += ["game-hub"]')
+          fi
+          
+          if [ "${{ steps.filter.outputs.discoverex }}" == 'true' ]; then
+            APPS=$(echo "$APPS" | jq -c '. += ["discoverex"]')
+          fi
+          
+          if [ "${{ steps.filter.outputs.magic-eye }}" == 'true' ]; then
+            APPS=$(echo "$APPS" | jq -c '. += ["magic-eye"]')
+          fi
+          
+          # 최종 결과 출력 (이 값이 matrix로 들어갑니다)
+          echo "apps=$APPS" >> $GITHUB_OUTPUT
 
   deploy:
     needs: filter
