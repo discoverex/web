@@ -49,19 +49,22 @@ jobs:
               - 'Dockerfile'
 
       - id: set-apps
+        name: Decide which apps to deploy
         run: |
-          # 1. 수동 실행(workflow_dispatch)인 경우 모든 앱 포함
+          # 1. 수동 실행인 경우
           if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
-            echo 'apps=["game-hub", "discoverex", "magic-eye"]' >> $GITHUB_OUTPUT
+            INPUT_APP="${{ github.event.inputs.force_app }}"
+            if [ -n "$INPUT_APP" ] && [ "$INPUT_APP" != "all" ]; then
+              # 특정 앱만 지정한 경우 (예: game-hub)
+              echo "apps=[\"$INPUT_APP\"]" >> $GITHUB_OUTPUT
+            else
+              # 입력이 없거나 "all"인 경우 전체 배포
+              echo 'apps=["game-hub", "discoverex", "magic-eye"]' >> $GITHUB_OUTPUT
+            fi
           else
-            # 2. Push 실행인 경우 변경된 앱만 필터링 (빈 값 방지 로직)
-            APPS=$(echo "[]" | jq -c .)
-            if [ "${{ steps.filter.outputs.game-hub }}" == 'true' ]; then APPS=$(echo "$APPS" | jq -c '. += ["game-hub"]'); fi
-            if [ "${{ steps.filter.outputs.discoverex }}" == 'true' ]; then APPS=$(echo "$APPS" | jq -c '. += ["discoverex"]'); fi
-            if [ "${{ steps.filter.outputs.magic-eye }}" == 'true' ]; then APPS=$(echo "$APPS" | jq -c '. += ["magic-eye"]'); fi
-          
-            # 3. 만약 변경된 앱이 하나도 없다면 빈 배열 유지
-            echo "apps=$APPS" >> $GITHUB_OUTPUT
+            # 2. Push 실행인 경우 (변경 사항이 있는 앱만 JSON 배열로 가져옴)
+            # steps.filter.outputs.changes는 ["app1", "app2"] 형태의 JSON 문자열을 반환합니다.
+            echo "apps=${{ steps.filter.outputs.changes }}" >> $GITHUB_OUTPUT
           fi
 
   deploy:
