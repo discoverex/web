@@ -3,7 +3,7 @@ FROM node:20-alpine AS builder
 RUN apk add --no-cache libc6-compat
 WORKDIR /app
 COPY . .
-ARG APP_NAME
+ARG APP_NAME=game-hub
 # pnpm dlx를 사용하여 프로젝트의 turbo 버전을 따르도록 함 (더 안정적)
 RUN npx turbo prune --scope=${APP_NAME} --docker
 
@@ -18,7 +18,7 @@ ENV PATH="$PNPM_HOME:$PATH"
 RUN corepack enable && corepack prepare pnpm@9.0.0 --activate
 
 # 빌드 인자 재선언 (다음 단계에서 사용)
-ARG APP_NAME
+ARG APP_NAME=game-hub
 ARG NEXT_PUBLIC_FIREBASE_API_KEY
 ARG NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN
 ARG NEXT_PUBLIC_FIREBASE_PROJECT_ID
@@ -51,7 +51,7 @@ RUN pnpm exec turbo build --filter=${APP_NAME}
 FROM node:20-alpine AS runner
 WORKDIR /app
 
-ARG APP_NAME
+ARG APP_NAME=game-hub
 ENV APP_NAME=$APP_NAME
 ENV NODE_ENV=production
 ENV PORT=8080
