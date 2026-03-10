@@ -19,16 +19,7 @@ const nextConfig = {
     remotePatterns: [
       {
         protocol: 'https',
-        hostname: 'lh3.googleusercontent.com',
-        port: '',
-        pathname: '/**', // 모든 경로 허용
-      },
-
-      {
-        protocol: 'http',
-        hostname: 'googleusercontent.com',
-        port: '',
-        pathname: '/profile/picture/**',
+        hostname: '*.googleusercontent.com',
       },
     ],
   },

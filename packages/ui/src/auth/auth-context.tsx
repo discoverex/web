@@ -75,10 +75,29 @@ export function AuthProvider({
           window.location.pathname +
           window.location.search
             .replace(/[?&]sso_token=[^&]+/, "")
-            .replace(/^&/, "?");
+            .replace(/^&/, "?")
+            .replace(/\?$/, "");
         window.history.replaceState({}, "", newUrl);
       }
     }
+
+    // JWT 디코딩 함수 (Base64)
+    const decodeToken = (token: string) => {
+      try {
+        const base64Url = token.split(".")[1];
+        if (!base64Url) return null;
+        const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
+        const jsonPayload = decodeURIComponent(
+          atob(base64)
+            .split("")
+            .map((c) => "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2))
+            .join(""),
+        );
+        return JSON.parse(jsonPayload);
+      } catch (e) {
+        return null;
+      }
+    };
 
     // 2. Firebase 인증 상태 감시
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
@@ -87,12 +106,24 @@ export function AuthProvider({
         setLoading(false);
         await fetchMyInfoFromBackend();
       } else {
-        // Firebase User가 없어도 sessionStorage에 토큰이 있다면 백엔드 인증 시도
+        // Firebase User가 없어도 sessionStorage에 토큰이 있다면 정보 추출 및 백엔드 인증 시도
         const savedToken =
           typeof window !== "undefined"
             ? window.sessionStorage.getItem("sso_token")
             : null;
+        
         if (savedToken) {
+          const decoded = decodeToken(savedToken);
+          if (decoded) {
+            // 토큰 정보를 기반으로 임시 유저 객체 생성
+            setUser({
+              uid: decoded.user_id || decoded.sub,
+              email: decoded.email,
+              displayName: decoded.name,
+              photoURL: decoded.picture,
+              isAnonymous: false,
+            });
+          }
           await fetchMyInfoFromBackend();
         } else {
           setUser(null);
