@@ -47,6 +47,10 @@ COPY --from=builder /app/out/full/ .
 ENV NEXT_TELEMETRY_DISABLED=1
 RUN pnpm exec turbo build --filter=${APP_NAME}
 
+# 네이티브 라이브러리(.so) 추출 스테이지 (심볼릭 링크 해결을 위해 -L 옵션 사용)
+RUN mkdir -p /app/native_libs && \
+    find /app/node_modules/onnxruntime-node -name "*.so*" -exec cp -L {} /app/native_libs/ \; || true
+
 # 3. Runner stage
 FROM node:20-bookworm-slim AS runner
 # 실행 시 필요한 최소한의 공유 라이브러리 설치
@@ -60,14 +64,14 @@ ENV NODE_ENV=production
 ENV PORT=8080
 ENV HOSTNAME="0.0.0.0"
 
-# standalone 빌드 결과물 복사 (Next.js config의 output: 'standalone' 필요)
+# standalone 빌드 결과물 복사
 COPY --from=installer /app/apps/${APP_NAME}/public ./apps/${APP_NAME}/public
 COPY --from=installer /app/apps/${APP_NAME}/.next/standalone ./
 COPY --from=installer /app/apps/${APP_NAME}/.next/static ./apps/${APP_NAME}/.next/static
 
-# pnpm/standalone 구조에서 네이티브 라이브러리를 찾지 못하는 문제를 해결하기 위해
-# .so 파일들을 시스템 라이브러리 경로(/usr/lib)로 직접 복사
-RUN find /app/node_modules/onnxruntime-node -name "*.so*" -exec cp {} /usr/lib/ \; || true
+# 추출된 네이티브 라이브러리를 시스템 경로로 복사 및 설정 업데이트
+COPY --from=installer /app/native_libs /usr/lib/
+RUN ldconfig
 
 # 실행 명령 (앱 이름에 따른 경로 설정)
 ENTRYPOINT ["sh", "-c", "node apps/${APP_NAME}/server.js"]
