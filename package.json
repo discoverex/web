@@ -3,7 +3,7 @@
   "private": true,
   "scripts": {
     "build": "turbo run build",
-    "dev": "turbo run dev --ui=stream",
+    "dev": "dotenv -e .env -- turbo run dev --ui=stream",
     "dev:game": "turbo run dev --filter=game-hub --ui=stream",
     "dev:discoverex": "turbo run dev --filter=discoverex --ui=stream",
     "dev:magiceye": "turbo run dev --filter=magic-eye --ui=stream",
@@ -12,6 +12,7 @@
     "check-types": "turbo run check-types"
   },
   "devDependencies": {
+    "dotenv-cli": "^11.0.0",
     "prettier": "^3.7.4",
     "turbo": "^2.8.11",
     "typescript": "5.9.2"
