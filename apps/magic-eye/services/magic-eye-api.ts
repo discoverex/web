@@ -14,24 +14,31 @@ export interface MagicEyeResponse {
 const modelCache: Record<string, ort.InferenceSession> = {};
 
 // GCP_SERVICE_ACCOUNT_JSON 환경 변수 처리 (따옴표 제거 포함)
-const rawServiceAccount = process.env.GCP_SERVICE_ACCOUNT_JSON || "{}";
-let gcpCredentials = {};
+const rawServiceAccount = process.env.GCP_SERVICE_ACCOUNT_JSON || "";
+let gcpCredentials = null;
 
-try {
-  // 싱글 쿼트나 더블 쿼트로 감싸져 있는 경우 제거
-  const cleanJson =
-    rawServiceAccount.startsWith("'") || rawServiceAccount.startsWith('"')
-      ? rawServiceAccount.slice(1, -1)
-      : rawServiceAccount;
+if (rawServiceAccount && rawServiceAccount !== "{}") {
+  try {
+    // 싱글 쿼트나 더블 쿼트로 감싸져 있는 경우 제거
+    const cleanJson =
+      (rawServiceAccount.startsWith("'") && rawServiceAccount.endsWith("'")) ||
+      (rawServiceAccount.startsWith('"') && rawServiceAccount.endsWith('"'))
+        ? rawServiceAccount.slice(1, -1)
+        : rawServiceAccount;
 
-  gcpCredentials = JSON.parse(cleanJson);
-} catch (e) {
-  console.error("[SERVER-SIDE] Failed to parse GCP_SERVICE_ACCOUNT_JSON", e);
+    gcpCredentials = JSON.parse(cleanJson);
+    console.log(
+      `[SERVER-SIDE] GCP Credentials parsed. Keys: ${Object.keys(gcpCredentials).join(", ")}`,
+    );
+  } catch (e) {
+    console.error("[SERVER-SIDE] Failed to parse GCP_SERVICE_ACCOUNT_JSON", e);
+  }
 }
 
-const storage = new Storage({
-  credentials: gcpCredentials,
-});
+// credentials가 있으면 사용하고, 없으면 ADC(Application Default Credentials) 모드로 동작
+const storage = new Storage(
+  gcpCredentials ? { credentials: gcpCredentials } : {},
+);
 const rawBucketName = process.env.BUCKET_NAME || "discoverex-image-storage";
 const BUCKET_NAME =
   rawBucketName.startsWith("'") || rawBucketName.startsWith('"')
