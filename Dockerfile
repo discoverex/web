@@ -50,9 +50,7 @@ RUN pnpm exec turbo build --filter=${APP_NAME}
 # 3. Runner stage
 FROM node:20-bookworm-slim AS runner
 # 실행 시 필요한 최소한의 공유 라이브러리 설치
-RUN apt-get update && apt-get install -y \
-    libgomp1 \
-    && rm -rf /var/lib/apt/lists/* \
+RUN apt-get update && apt-get install -y libgomp1 && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 
@@ -66,6 +64,9 @@ ENV HOSTNAME="0.0.0.0"
 COPY --from=installer /app/apps/${APP_NAME}/public ./apps/${APP_NAME}/public
 COPY --from=installer /app/apps/${APP_NAME}/.next/standalone ./
 COPY --from=installer /app/apps/${APP_NAME}/.next/static ./apps/${APP_NAME}/.next/static
+
+# pnpm 구조상 node_modules 내부 깊숙이 있는 .so 파일을 시스템이 찾을 수 있게 조치
+ENV LD_LIBRARY_PATH=/app/node_modules/onnxruntime-node/bin/napi-v6/linux/x64
 
 # 실행 명령 (앱 이름에 따른 경로 설정)
 ENTRYPOINT ["sh", "-c", "node apps/${APP_NAME}/server.js"]
