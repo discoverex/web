@@ -1,17 +1,40 @@
 'use client';
 
-import React from "react";
+import React, { useRef } from "react";
 import Image from "next/image";
+import Lottie, { LottieRefCurrentProps } from "lottie-react";
 import { useAuth } from "@repo/ui/auth";
+import rexAnimation from "../public/rex-animation.json";
 
 export default function Home() {
   const { user, loading, logout } = useAuth();
+  const lottieRef = useRef<LottieRefCurrentProps>(null);
 
   if (loading) return <div className="flex h-screen items-center justify-center">인증 상태 확인 중...</div>;
+
+  const handleLottieClick = () => {
+    if (lottieRef.current) {
+      lottieRef.current.stop();
+      lottieRef.current.play();
+    }
+  };
 
   return (
     <div className="flex min-h-screen flex-col items-center justify-center bg-zinc-50 font-sans dark:bg-black p-8">
       <main className="flex w-full max-w-3xl flex-col items-center gap-8 bg-white dark:bg-zinc-900 p-12 rounded-2xl shadow-xl">
+        <div 
+          className="w-48 h-48 cursor-pointer hover:scale-105 transition-transform" 
+          onClick={handleLottieClick}
+          title="클릭해서 애니메이션 재생"
+        >
+          <Lottie 
+            lottieRef={lottieRef}
+            animationData={rexAnimation} 
+            loop={false} 
+            autoplay={false}
+          />
+        </div>
+        
         <Image
           className="dark:invert"
           src="/next.svg"
