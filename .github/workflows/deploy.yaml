@@ -2,18 +2,19 @@ name: Deploy to Cloud Run
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
   workflow_dispatch: # 강제 배포 옵션 - 코드가 변하지 않았어도 언제든 수동 실행 가능
     inputs:
       force_app:
-        description: '강제 배포할 앱 이름 (game-hub, discoverex, magic-eye)'
+        description: "강제 배포할 앱 이름 (game-hub, discoverex, magic-eye)"
         required: false
-        default: ''
+        default: ""
 
 env:
   PROJECT_ID: discoverex-project # 실제 프로젝트 ID로 변경 필요 시 수정
   REGION: asia-northeast3
   GAR_LOCATION: asia-northeast3-docker.pkg.dev
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 jobs:
   filter:
@@ -107,7 +108,7 @@ jobs:
             --build-arg "NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=${{ secrets.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID }}" \
             --build-arg "NEXT_PUBLIC_FIREBASE_APP_ID=${{ secrets.NEXT_PUBLIC_FIREBASE_APP_ID }}" \
             -t ${{ env.GAR_LOCATION }}/${{ secrets.GCP_PROJECT_ID }}/apps/${{ matrix.app }}:${{ github.sha }} .
-          
+
           docker push ${{ env.GAR_LOCATION }}/${{ secrets.GCP_PROJECT_ID }}/apps/${{ matrix.app }}:${{ github.sha }}
 
       - name: Deploy to Cloud Run
