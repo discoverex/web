@@ -5,7 +5,7 @@ import "./game.css";
 
 import { MagicEyeHeader, CategorySelector } from "./components/header-controls";
 import { ImageSidebar } from "./components/image-sidebar";
-import { GameBoard } from "./components/game-board";
+import { GameBoardContainer } from "./components/game-board-container";
 import { CATEGORIES } from "@/consts/CATEGORIES";
 
 const API_BASE_URL =
@@ -144,7 +144,7 @@ export default function MagicEyeGame() {
           onSelectImage={setSelectedImageData}
         />
 
-        <GameBoard
+        <GameBoardContainer
           selectedImageData={selectedImageData}
           answers={answers}
           onClose={() => setSelectedImageData(null)}

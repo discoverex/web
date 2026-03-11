@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 import React, { useRef } from "react";
 import Image from "next/image";
@@ -10,7 +10,12 @@ export default function Home() {
   const { user, loading, logout } = useAuth();
   const lottieRef = useRef<LottieRefCurrentProps>(null);
 
-  if (loading) return <div className="flex h-screen items-center justify-center">인증 상태 확인 중...</div>;
+  if (loading)
+    return (
+      <div className="flex h-screen items-center justify-center">
+        인증 상태 확인 중...
+      </div>
+    );
 
   const handleLottieClick = () => {
     if (lottieRef.current) {
@@ -22,19 +27,19 @@ export default function Home() {
   return (
     <div className="flex min-h-screen flex-col items-center justify-center bg-zinc-50 font-sans dark:bg-black p-8">
       <main className="flex w-full max-w-3xl flex-col items-center gap-8 bg-white dark:bg-zinc-900 p-12 rounded-2xl shadow-xl">
-        <div 
-          className="w-48 h-48 cursor-pointer hover:scale-105 transition-transform" 
+        <div
+          className="w-48 h-48 cursor-pointer hover:scale-105 transition-transform"
           onClick={handleLottieClick}
           title="클릭해서 애니메이션 재생"
         >
-          <Lottie 
+          <Lottie
             lottieRef={lottieRef}
-            animationData={rexAnimation} 
-            loop={false} 
+            animationData={rexAnimation}
+            loop={false}
             autoplay={false}
           />
         </div>
-        
+
         <Image
           className="dark:invert"
           src="/next.svg"
@@ -43,18 +48,22 @@ export default function Home() {
           height={24}
           priority
         />
-        
+
         <div className="text-center space-y-4">
           <h1 className="text-4xl font-bold tracking-tight text-black dark:text-zinc-50">
             렉스를 찾아라! (Discoverex)
           </h1>
-          
+
           {user ? (
             <div className="p-6 bg-green-50 dark:bg-green-900/20 rounded-xl border border-green-200 dark:border-green-800">
               <p className="text-lg font-medium text-green-800 dark:text-green-400">
-                ✅ 로그인 성공! 환영합니다, <span className="font-bold underline">{user.displayName || user.email}</span>님.
+                ✅ 로그인 성공! 환영합니다,{" "}
+                <span className="font-bold underline">
+                  {user.displayName || user.email}
+                </span>
+                님.
               </p>
-              <button 
+              <button
                 onClick={logout}
                 className="mt-4 text-sm text-red-600 hover:underline cursor-pointer"
               >
@@ -66,7 +75,7 @@ export default function Home() {
               <p className="text-lg font-medium text-amber-800 dark:text-amber-400">
                 ❌ 로그인이 필요합니다. Game Hub에서 로그인해 주세요.
               </p>
-              <a 
+              <a
                 href="https://discoverex-game-hub-329947062450.asia-northeast3.run.app"
                 className="mt-4 inline-block px-6 py-2 bg-amber-600 text-white rounded-full hover:bg-amber-700 transition-colors"
               >
