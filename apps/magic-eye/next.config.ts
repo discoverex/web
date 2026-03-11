@@ -3,10 +3,8 @@ import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
   output: 'standalone',
   serverExternalPackages: ['onnxruntime-node', 'sharp'],
-  experimental: {
-    outputFileTracingIncludes: {
-      '/api/predict': ['./node_modules/onnxruntime-node/bin/**/*'],
-    },
+  outputFileTracingIncludes: {
+    '/api/predict': ['./node_modules/onnxruntime-node/bin/**/*'],
   },
   /* config options here */
   images: {

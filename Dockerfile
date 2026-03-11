@@ -45,11 +45,16 @@ RUN pnpm install --frozen-lockfile
 # 전체 소스 복사 및 빌드
 COPY --from=builder /app/out/full/ .
 ENV NEXT_TELEMETRY_DISABLED=1
+
+# 라이브러리 위치 확인 (디버그용)
+RUN find /app -name "libonnxruntime.so.1"
+
 RUN pnpm exec turbo build --filter=${APP_NAME}
 
 # 네이티브 라이브러리(.so) 추출 스테이지 (심볼릭 링크 해결을 위해 -L 옵션 사용)
+# pnpm의 경우 .pnpm 디렉토리 내부의 실제 바이너리를 찾아서 복사
 RUN mkdir -p /app/native_libs && \
-    find /app/node_modules/onnxruntime-node -name "*.so*" -exec cp -L {} /app/native_libs/ \; || true
+    find /app/node_modules -name "*.so*" -exec cp -L {} /app/native_libs/ \; || true
 
 # 3. Runner stage
 FROM node:20-bookworm-slim AS runner
