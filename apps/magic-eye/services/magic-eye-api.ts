@@ -13,10 +13,30 @@ export interface MagicEyeResponse {
 
 const modelCache: Record<string, ort.InferenceSession> = {};
 
+// GCP_SERVICE_ACCOUNT_JSON 환경 변수 처리 (따옴표 제거 포함)
+const rawServiceAccount = process.env.GCP_SERVICE_ACCOUNT_JSON || "{}";
+let gcpCredentials = {};
+
+try {
+  // 싱글 쿼트나 더블 쿼트로 감싸져 있는 경우 제거
+  const cleanJson =
+    rawServiceAccount.startsWith("'") || rawServiceAccount.startsWith('"')
+      ? rawServiceAccount.slice(1, -1)
+      : rawServiceAccount;
+
+  gcpCredentials = JSON.parse(cleanJson);
+} catch (e) {
+  console.error("[SERVER-SIDE] Failed to parse GCP_SERVICE_ACCOUNT_JSON", e);
+}
+
 const storage = new Storage({
-  credentials: JSON.parse(process.env.GCP_SERVICE_ACCOUNT_JSON || "{}"),
+  credentials: gcpCredentials,
 });
-const BUCKET_NAME = process.env.BUCKET_NAME || "discoverex-image-storage";
+const rawBucketName = process.env.BUCKET_NAME || "discoverex-image-storage";
+const BUCKET_NAME =
+  rawBucketName.startsWith("'") || rawBucketName.startsWith('"')
+    ? rawBucketName.slice(1, -1)
+    : rawBucketName;
 
 async function getModelSession(level: number): Promise<ort.InferenceSession> {
   const modelName = `ai_lv${level}.onnx`;
