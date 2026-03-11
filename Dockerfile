@@ -65,9 +65,9 @@ COPY --from=installer /app/apps/${APP_NAME}/public ./apps/${APP_NAME}/public
 COPY --from=installer /app/apps/${APP_NAME}/.next/standalone ./
 COPY --from=installer /app/apps/${APP_NAME}/.next/static ./apps/${APP_NAME}/.next/static
 
-# pnpm 구조상 node_modules 내부 깊숙이 있는 .so 파일을 시스템이 찾을 수 있게 조치
-# standalone 모드에서는 루트의 node_modules에 위치함
-ENV LD_LIBRARY_PATH="/app/node_modules/onnxruntime-node/bin/napi-v6/linux/x64:/usr/lib"
+# pnpm/standalone 구조에서 네이티브 라이브러리를 찾지 못하는 문제를 해결하기 위해
+# .so 파일들을 시스템 라이브러리 경로(/usr/lib)로 직접 복사
+RUN find /app/node_modules/onnxruntime-node -name "*.so*" -exec cp {} /usr/lib/ \; || true
 
 # 실행 명령 (앱 이름에 따른 경로 설정)
 ENTRYPOINT ["sh", "-c", "node apps/${APP_NAME}/server.js"]
