@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import { queryMagicEyeByUrl } from "../services/magic-eye-api";
 
 const API_BASE_URL =
   process.env.NEXT_PUBLIC_SERVER_URL || "http://localhost:8080";
@@ -99,7 +100,6 @@ export default function MagicEyeGame() {
       const dummyAnswers = labels.map((label, i) => ({
         id: `ans-${i}`,
         label,
-        // 나중에 실제 이미지 경로로 교체될 부분임.
         imageUrl: `https://picsum.photos/seed/${label}/200`, 
         x: Math.random() * 80 + 10,
         y: Math.random() * 80 + 10,
@@ -136,29 +136,22 @@ export default function MagicEyeGame() {
     
     setAiLoading(true);
     setAiHint(null);
+    setError(null);
     try {
-      const response = await fetch("/api/predict", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          imageUrl: selectedImageData.url,
-          level: 1,
-        }),
-      });
-
-      const result = await response.json();
+      const result = await queryMagicEyeByUrl(selectedImageData.url, 5);
       
       if (Array.isArray(result) && result.length > 0) {
-        // [{ label: "heart", score: 0.9842 }, ...]
         const topResult = result[0];
         setAiHint({
           label: topResult.label,
           score: topResult.score
         });
+      } else {
+        setError("AI 분석 결과를 가져올 수 없습니다.");
       }
     } catch (err) {
       console.error("AI 훈수 실패:", err);
-      setError("AI 분석에 실패했습니다.");
+      setError("AI 분석 중 에러가 발생했습니다.");
     } finally {
       setAiLoading(false);
     }
@@ -214,7 +207,6 @@ export default function MagicEyeGame() {
             </option>
           ))}
         </select>
-        {/* 커스텀 화살표 아이콘 */}
         <div className="absolute right-5 bottom-4 pointer-events-none text-zinc-400">
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
             <polyline points="6 9 12 15 18 9"></polyline>
@@ -223,7 +215,6 @@ export default function MagicEyeGame() {
       </div>
 
       <main className="max-w-[1600px] mx-auto grid grid-cols-1 lg:grid-cols-5 gap-10">
-        {/* 왼쪽: 이미지 목록 */}
         <aside className="lg:col-span-1 bg-white dark:bg-zinc-900 p-6 rounded-3xl shadow-xl border border-zinc-200 dark:border-zinc-800">
           <div className="flex items-center justify-between mb-6 border-b border-zinc-100 dark:border-zinc-800 pb-4">
             <h2 className="text-xl font-bold text-amber-500">LIST</h2>
@@ -256,7 +247,6 @@ export default function MagicEyeGame() {
           </ul>
         </aside>
 
-        {/* 오른쪽: 게임 화면 (확대됨) */}
         <section className="lg:col-span-4 bg-white dark:bg-zinc-900 p-8 rounded-3xl shadow-2xl border border-zinc-200 dark:border-zinc-800 flex flex-col items-center justify-center min-h-[700px] relative overflow-hidden">
           {selectedImageData ? (
             <div className="w-full h-full flex flex-col">
@@ -286,7 +276,6 @@ export default function MagicEyeGame() {
               </div>
 
               <div className="relative flex-grow border-8 border-zinc-100 dark:border-zinc-800 rounded-3xl overflow-hidden cursor-pointer group flex justify-center items-center bg-zinc-200 dark:bg-zinc-950 shadow-inner min-h-[600px]">
-                {/* AI 훈수 말풍선 */}
                 {aiHint && (
                   <div className="absolute top-10 right-10 z-30 flex items-end gap-3 animate-hint">
                     <div className="bg-white dark:bg-zinc-800 p-4 rounded-2xl shadow-2xl border-2 border-purple-500 max-w-xs relative">
@@ -294,14 +283,12 @@ export default function MagicEyeGame() {
                         "내가 보기엔 말이야... 여기 <span className="underline decoration-2 decoration-purple-300 font-black text-lg">'{aiHint.label}'</span> 모양이 숨어있는 것 같아!"
                       </p>
                       <p className="text-[10px] mt-2 opacity-50 font-mono text-right">Confidence: {(aiHint.score * 100).toFixed(1)}%</p>
-                      {/* 말풍선 꼬리 */}
                       <div className="absolute -bottom-2 right-4 w-4 h-4 bg-white dark:bg-zinc-800 border-r-2 border-b-2 border-purple-500 rotate-45" />
                     </div>
                     <div className="text-4xl filter drop-shadow-lg">🦖</div>
                   </div>
                 )}
 
-                {/* 맴도는 정답 선택지들 */}
                 {answers.map((ans) => (
                   <button
                     key={ans.id}
