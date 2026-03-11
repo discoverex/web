@@ -66,7 +66,8 @@ COPY --from=installer /app/apps/${APP_NAME}/.next/standalone ./
 COPY --from=installer /app/apps/${APP_NAME}/.next/static ./apps/${APP_NAME}/.next/static
 
 # pnpm 구조상 node_modules 내부 깊숙이 있는 .so 파일을 시스템이 찾을 수 있게 조치
-ENV LD_LIBRARY_PATH=/app/node_modules/onnxruntime-node/bin/napi-v6/linux/x64
+# standalone 모드에서는 루트의 node_modules에 위치함
+ENV LD_LIBRARY_PATH="/app/node_modules/onnxruntime-node/bin/napi-v6/linux/x64:/usr/lib"
 
 # 실행 명령 (앱 이름에 따른 경로 설정)
 ENTRYPOINT ["sh", "-c", "node apps/${APP_NAME}/server.js"]
