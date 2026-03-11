@@ -71,7 +71,11 @@ COPY --from=installer /app/apps/${APP_NAME}/.next/static ./apps/${APP_NAME}/.nex
 
 # 추출된 네이티브 라이브러리를 시스템 경로로 복사 및 설정 업데이트
 COPY --from=installer /app/native_libs /usr/lib/
+# libonnxruntime.so.1을 시스템 라이브러리 목록에 강제 등록
 RUN ldconfig
+
+# ONNX Runtime이 사용하는 .so 파일을 명시적으로 찾을 수 있게 경로 지정
+ENV LD_LIBRARY_PATH="/usr/lib:/usr/local/lib"
 
 # 실행 명령 (앱 이름에 따른 경로 설정)
 ENTRYPOINT ["sh", "-c", "node apps/${APP_NAME}/server.js"]
