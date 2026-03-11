@@ -76,22 +76,32 @@ async function preprocessImage(imageUrl: string): Promise<ort.Tensor> {
   const response = await fetch(imageUrl);
   const buffer = await response.arrayBuffer();
 
+  // PyTorch/PIL의 transforms.Resize((224, 224))는 기본적으로 bilinear 보간법을 사용함.
+  // sharp의 기본값인 lanczos3는 매직아이 패턴을 과하게 선명하게 만들어 왜곡을 발생시킬 수 있음.
   const { data } = await sharp(Buffer.from(buffer))
-    .resize(224, 224, { fit: "fill" })
-    .removeAlpha()
+    .toColorspace("srgb") // 색상 공간 강제 고정
+    .resize(224, 224, {
+      fit: "fill", // PyTorch의 Resize((224, 224))와 동일하게 비율 무시하고 채우기
+      kernel: "linear", // sharp v0.33+에서 bilinear 보간법은 'linear' 커널을 사용함
+    })
+    .removeAlpha() // 알파 채널 제거 (RGB 3채널 보장)
     .raw()
     .toBuffer({ resolveWithObject: true });
 
   const float32Data = new Float32Array(3 * 224 * 224);
 
-  // PyTorch 표준 정규화 값 (모델에 따라 다를 수 있음)
+  // PyTorch 표준 정규화 값 (모델 학습 시 사용된 값과 동일)
   const mean = [0.485, 0.456, 0.406];
   const std = [0.229, 0.224, 0.225];
 
+  // PyTorch의 ToTensor() + Normalize()와 동일한 연산 수행
+  // ToTensor: [0, 255] -> [0, 1] 변환 및 HWC -> CHW 레이아웃 변경
+  // Normalize: (pixel - mean) / std
   for (let c = 0; c < 3; c++) {
     for (let i = 0; i < 224 * 224; i++) {
-      // 0~1 변환 후 Mean 빼고 Std로 나누기
+      // data는 [R, G, B, R, G, B...] 순서 (HWC)
       const pixel = data[i * 3 + c] / 255.0;
+      // float32Data는 [R...G...B...] 순서 (CHW)
       float32Data[c * 224 * 224 + i] = (pixel - mean[c]) / std[c];
     }
   }
