@@ -1,6 +1,6 @@
 # 1. Prune stage
-FROM node:20-alpine AS builder
-RUN apk add --no-cache libc6-compat
+FROM node:20-bookworm-slim AS builder
+RUN apt-get update && apt-get install -y python3 make g++ && rm -rf /var/lib/apt/lists/*
 WORKDIR /app
 COPY . .
 ARG APP_NAME=game-hub
@@ -8,8 +8,8 @@ ARG APP_NAME=game-hub
 RUN npx turbo prune --scope=${APP_NAME} --docker
 
 # 2. Build stage
-FROM node:20-alpine AS installer
-RUN apk add --no-cache libc6-compat
+FROM node:20-bookworm-slim AS installer
+RUN apt-get update && apt-get install -y python3 make g++ && rm -rf /var/lib/apt/lists/*
 WORKDIR /app
 
 # pnpm 명시적 활성화 및 버전 설정
@@ -48,7 +48,7 @@ ENV NEXT_TELEMETRY_DISABLED=1
 RUN pnpm exec turbo build --filter=${APP_NAME}
 
 # 3. Runner stage
-FROM node:20-alpine AS runner
+FROM node:20-bookworm-slim AS runner
 WORKDIR /app
 
 ARG APP_NAME=game-hub
