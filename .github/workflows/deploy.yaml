@@ -118,5 +118,5 @@ jobs:
             --region ${{ env.REGION }} \
             --platform managed \
             --quiet \
-            --allow-unauthenticated
+            --allow-unauthenticated \
             --timeout 10m
