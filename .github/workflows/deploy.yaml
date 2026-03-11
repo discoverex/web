@@ -119,3 +119,4 @@ jobs:
             --platform managed \
             --quiet \
             --allow-unauthenticated
+            --timeout 10m
