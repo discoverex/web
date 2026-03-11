@@ -50,6 +50,8 @@ jobs:
 
       - id: set-apps
         name: Decide which apps to deploy
+        env:
+          CHANGES: ${{ steps.filter.outputs.changes }}
         run: |
           # 1. 수동 실행인 경우
           if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
@@ -62,9 +64,9 @@ jobs:
               echo 'apps=["game-hub", "discoverex", "magic-eye"]' >> $GITHUB_OUTPUT
             fi
           else
-            # 2. Push 실행인 경우 (변경 사항이 있는 앱만 JSON 배열로 가져옴)
-            # steps.filter.outputs.changes는 ["app1", "app2"] 형태의 JSON 문자열을 반환합니다.
-            echo "apps=${{ steps.filter.outputs.changes }}" >> $GITHUB_OUTPUT
+            # 2. Push 실행인 경우
+            # 환경 변수 $CHANGES를 사용하여 따옴표가 유실되지 않도록 합니다.
+            echo "apps=$CHANGES" >> $GITHUB_OUTPUT
           fi
 
   deploy:
