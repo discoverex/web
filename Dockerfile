@@ -49,6 +49,11 @@ RUN pnpm exec turbo build --filter=${APP_NAME}
 
 # 3. Runner stage
 FROM node:20-bookworm-slim AS runner
+# 실행 시 필요한 최소한의 공유 라이브러리 설치
+RUN apt-get update && apt-get install -y \
+    libgomp1 \
+    && rm -rf /var/lib/apt/lists/* \
+
 WORKDIR /app
 
 ARG APP_NAME=game-hub
