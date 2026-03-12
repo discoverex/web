@@ -21,17 +21,15 @@ export function useQuiz() {
       setCandidates(data.candidates);
       setCorrectAnswerId(data.correctAnswerId);
       setSelectedImageData(data.selectedImageData);
+      return true; // 성공 시 true 반환
     } catch (err) {
       console.error(err);
       setError(err instanceof Error ? err.message : "알 수 없는 오류가 발생했습니다.");
+      return false; // 실패 시 false 반환
     } finally {
       setLoading(false);
     }
   }, [candidateCount]);
-
-  useEffect(() => {
-    fetchQuiz();
-  }, [fetchQuiz]);
 
   const handleAnswerClick = (ansId: string) => {
     if (wrongAnswerId || correctAnswerId === null) return;

@@ -46,11 +46,12 @@ export const GameBoardContentView: React.FC<GameBoardContentViewProps> = ({
         wrongAnswerId={wrongAnswerId}
       />
 
-      <div className="relative w-full h-full min-h-[600px] flex items-center justify-center p-4">
+      <div className="relative w-full h-full min-h-[600px] flex items-center justify-center p-4 pointer-events-none select-none">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src={imageUrl}
           alt="Magic Eye Problem"
+          draggable={false}
           className="max-w-full max-h-full object-contain z-10 shadow-lg rounded-lg"
           style={{ 
             imageRendering: 'auto',
