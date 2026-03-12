@@ -85,7 +85,7 @@ jobs:
       - id: auth
         uses: google-github-actions/auth@v2
         with:
-          credentials_json: ${{ secrets.GCP_SA_KEY }}
+          credentials_json: ${{ secrets.GCP_SERVICE_ACCOUNT_JSON }}
 
       - name: Set up Cloud SDK
         uses: google-github-actions/setup-gcloud@v2
@@ -127,5 +127,5 @@ jobs:
             NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=${{ secrets.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID }}
             NEXT_PUBLIC_FIREBASE_APP_ID=${{ secrets.NEXT_PUBLIC_FIREBASE_APP_ID }}
             BUCKET_NAME=${{ secrets.BUCKET_NAME }}
-            GCP_SERVICE_ACCOUNT_JSON=${{ secrets.GCP_SA_KEY }}
+            GCP_SERVICE_ACCOUNT_JSON=${{ secrets.GCP_SERVICE_ACCOUNT_JSON }}
             OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }}
