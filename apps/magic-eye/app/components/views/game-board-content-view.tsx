@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { AiHint, QuizCandidate } from "@/app/types";
 import { MovingAnswerOptions } from "../moving-answer-options";
 
@@ -19,10 +19,36 @@ export const GameBoardContentView: React.FC<GameBoardContentViewProps> = ({
   onAnswerClick,
   wrongAnswerId,
 }) => {
+  const [showHint, setShowHint] = useState(false);
+  const [isExiting, setIsExiting] = useState(false);
+
+  // 새로운 힌트가 들어오면 표시
+  useEffect(() => {
+    if (aiHint) {
+      setShowHint(true);
+      setIsExiting(false);
+
+      // 5초 후 퇴장 애니메이션 시작
+      const exitTimer = setTimeout(() => {
+        setIsExiting(true);
+      }, 5000);
+
+      // 5.6초 후 (애니메이션 종료 시점) 완전히 제거
+      const removeTimer = setTimeout(() => {
+        setShowHint(false);
+      }, 5600);
+
+      return () => {
+        clearTimeout(exitTimer);
+        clearTimeout(removeTimer);
+      };
+    }
+  }, [aiHint]);
+
   return (
     <div className="relative flex-grow border-8 border-zinc-100 dark:border-zinc-800 rounded-3xl overflow-hidden cursor-pointer group flex justify-center items-center bg-zinc-200 dark:bg-zinc-950 shadow-inner min-h-[600px]">
-      {aiHint && (
-        <div className="absolute top-10 right-10 z-30 flex items-end gap-3 animate-hint">
+      {aiHint && showHint && (
+        <div className={`absolute top-10 right-10 z-30 flex items-end gap-3 ${isExiting ? "animate-exit-right" : "animate-hint"}`}>
           <div className="bg-white dark:bg-zinc-800 p-4 rounded-2xl shadow-2xl border-2 border-purple-500 max-w-xs relative">
             <p className="text-sm font-bold text-purple-600 dark:text-purple-400">
               {`"레벨 ${aiLevel} 모델로 분석한 결과야! 여기 `}
