@@ -7,7 +7,7 @@ import { GameBoardContainer } from "./components/game-board-container";
 import { GameLobbyView } from "./components/views/game-lobby-view";
 import { useQuiz } from "./hooks/use-quiz";
 
-type GameState = "LOBBY" | "READY" | "COUNTDOWN" | "PLAYING";
+type GameState = "LOBBY" | "READY" | "COUNTDOWN" | "PLAYING" | "CORRECT";
 
 export default function MagicEyeGame() {
   const {
@@ -15,7 +15,6 @@ export default function MagicEyeGame() {
     setCandidateCount,
     selectedImageData,
     candidates,
-    loading,
     error,
     wrongAnswerId,
     fetchQuiz,
@@ -26,8 +25,8 @@ export default function MagicEyeGame() {
   const [gameState, setGameState] = useState<GameState>("LOBBY");
   const [countdown, setCountdown] = useState(3);
 
-  // 게임 시작 버튼 클릭 핸들러
-  const handleStartGame = async () => {
+  // 게임 시작 및 퀴즈 불러오기 공통 로직
+  const loadNextQuiz = async () => {
     setGameState("READY");
     const success = await fetchQuiz();
     if (success) {
@@ -50,32 +49,25 @@ export default function MagicEyeGame() {
     }
   }, [gameState, countdown]);
 
-  // 새로운 퀴즈 요청 (게임 중 재시작)
-  const handleRestart = async () => {
-    setGameState("READY");
-    const success = await fetchQuiz();
-    if (success) {
-      setGameState("COUNTDOWN");
-      setCountdown(3);
-    }
-  };
-
-  // 로비로 돌아가기
-  const handleGoToLobby = () => {
-    setGameState("LOBBY");
-    closeGame();
+  // 정답 처리 핸들러
+  const onCorrectAnswer = () => {
+    setGameState("CORRECT");
+    // 1초간 정답 축하 효과를 보여준 뒤 바로 다음 퀴즈 로드
+    setTimeout(() => {
+      loadNextQuiz();
+    }, 1000);
   };
 
   return (
     <div className="w-full max-w-[1600px] mx-auto py-4 font-sans text-black dark:text-white">
       <main className="w-full">
         
-        {/* 1. 로비 화면 (설정) */}
+        {/* 1. 로비 화면 */}
         {gameState === "LOBBY" && (
           <GameLobbyView 
             candidateCount={candidateCount}
             onCountChange={setCandidateCount}
-            onStart={handleStartGame}
+            onStart={loadNextQuiz}
           />
         )}
 
@@ -83,7 +75,7 @@ export default function MagicEyeGame() {
         {gameState === "READY" && (
           <div className="flex flex-col items-center justify-center min-h-[700px] bg-white dark:bg-zinc-900 rounded-3xl shadow-2xl border border-zinc-200 dark:border-zinc-800">
             <div className="text-6xl animate-spin mb-8 text-amber-500">🌀</div>
-            <p className="text-2xl font-black tracking-tight">이미지를 분석하고 있습니다...</p>
+            <p className="text-2xl font-black tracking-tight">다음 문제를 준비하고 있습니다...</p>
           </div>
         )}
 
@@ -97,15 +89,26 @@ export default function MagicEyeGame() {
           </div>
         )}
 
-        {/* 4. 실제 게임 화면 */}
+        {/* 4. 정답 축하 화면 */}
+        {gameState === "CORRECT" && (
+          <div className="flex flex-col items-center justify-center min-h-[700px] bg-green-500 rounded-3xl shadow-2xl animate-in zoom-in duration-300">
+            <div className="text-9xl mb-8">🎉</div>
+            <h2 className="text-6xl font-black text-white tracking-tighter">정답입니다!</h2>
+          </div>
+        )}
+
+        {/* 5. 실제 게임 화면 */}
         {gameState === "PLAYING" && (
           <div className="flex flex-col gap-8 animate-in fade-in zoom-in duration-500">
             <GameBoardContainer
               selectedImageData={selectedImageData}
               candidates={candidates}
-              onClose={handleGoToLobby}
-              onAnswerClick={handleAnswerClick}
-              onRestart={handleRestart}
+              onClose={() => {
+                setGameState("LOBBY");
+                closeGame();
+              }}
+              onAnswerClick={(id) => handleAnswerClick(id, onCorrectAnswer)}
+              onRestart={loadNextQuiz}
               wrongAnswerId={wrongAnswerId}
             />
           </div>
@@ -115,7 +118,7 @@ export default function MagicEyeGame() {
           <div className="mt-8 p-6 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 rounded-2xl text-center font-bold border border-red-100 dark:border-red-900/30">
             {error}
             <button 
-              onClick={handleGoToLobby}
+              onClick={() => setGameState("LOBBY")}
               className="ml-4 underline hover:opacity-80"
             >
               로비로 돌아가기

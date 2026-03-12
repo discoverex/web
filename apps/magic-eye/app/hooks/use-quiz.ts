@@ -21,32 +21,34 @@ export function useQuiz() {
       setCandidates(data.candidates);
       setCorrectAnswerId(data.correctAnswerId);
       setSelectedImageData(data.selectedImageData);
-      return true; // 성공 시 true 반환
+      return true;
     } catch (err) {
       console.error(err);
       setError(err instanceof Error ? err.message : "알 수 없는 오류가 발생했습니다.");
-      return false; // 실패 시 false 반환
+      return false;
     } finally {
       setLoading(false);
     }
   }, [candidateCount]);
 
-  const handleAnswerClick = (ansId: string) => {
+  const handleAnswerClick = (ansId: string, onCorrect?: () => void) => {
     if (wrongAnswerId || correctAnswerId === null) return;
 
     if (parseInt(ansId) === correctAnswerId) {
-      alert("정답입니다! 🎉");
-      fetchQuiz();
+      // 정답인 경우 콜백 실행 (외부에서 상태 제어용)
+      if (onCorrect) onCorrect();
     } else {
       setWrongAnswerId(ansId);
-      // 2초 후 다시 움직임 재개
       setTimeout(() => {
         setWrongAnswerId(null);
       }, 2000);
     }
   };
 
-  const closeGame = () => setSelectedImageData(null);
+  const closeGame = () => {
+    setSelectedImageData(null);
+    setCandidates([]);
+  };
 
   return {
     candidateCount,
