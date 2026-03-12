@@ -35,11 +35,7 @@ export default function RootLayout({
       <body
         className={`${pretendard.variable} font-sans min-h-screen w-full bg-base-100`}
       >
-        <ThemeProvider 
-          attribute="data-theme" 
-          defaultTheme="dark" 
-          enableSystem={true}
-        >
+        <ThemeProvider attribute="data-theme" defaultTheme="dark" enableSystem={false}>
           <AuthProvider>
             <GlobalNavbar />
             <main className="p-4">{children}</main>
