@@ -6,6 +6,12 @@
   100% { transform: translate(0, 0) rotate(0deg); }
 }
 
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+  20%, 40%, 60%, 80% { transform: translateX(5px); }
+}
+
 @keyframes fadeInScale {
   from { opacity: 0; transform: scale(0.9) translateY(10px); }
   to { opacity: 1; transform: scale(1) translateY(0); }
@@ -14,7 +20,10 @@
 .animate-float {
   animation: float var(--float-duration) ease-in-out infinite;
   animation-delay: var(--float-delay);
-  transition: left 4s ease-in-out, top 4s ease-in-out;
+}
+
+.animate-shake {
+  animation: shake 0.5s cubic-bezier(.36,.07,.19,.97) both;
 }
 
 .animate-hint {

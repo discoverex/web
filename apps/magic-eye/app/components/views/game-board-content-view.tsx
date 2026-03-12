@@ -1,21 +1,23 @@
 import React from "react";
-import Image from "next/image";
-import { AnswerOption, AiHint } from "@/app/types";
+import { AiHint, QuizCandidate } from "@/app/types";
+import { MovingAnswerOptions } from "../moving-answer-options";
 
 interface GameBoardContentViewProps {
   imageUrl: string;
   aiHint: AiHint | null;
   aiLevel: number;
-  answers: AnswerOption[];
+  candidates: QuizCandidate[];
   onAnswerClick?: (id: string) => void;
+  wrongAnswerId?: string | null;
 }
 
 export const GameBoardContentView: React.FC<GameBoardContentViewProps> = ({
   imageUrl,
   aiHint,
   aiLevel,
-  answers,
+  candidates,
   onAnswerClick,
+  wrongAnswerId,
 }) => {
   return (
     <div className="relative flex-grow border-8 border-zinc-100 dark:border-zinc-800 rounded-3xl overflow-hidden cursor-pointer group flex justify-center items-center bg-zinc-200 dark:bg-zinc-950 shadow-inner min-h-[600px]">
@@ -38,44 +40,11 @@ export const GameBoardContentView: React.FC<GameBoardContentViewProps> = ({
         </div>
       )}
 
-      {answers.map((ans) => (
-        <button
-          key={ans.id}
-          className="absolute z-20 w-24 h-24 bg-white dark:bg-zinc-900 rounded-2xl shadow-2xl border-4 border-amber-500/50 overflow-hidden hover:scale-110 hover:border-amber-500 transition-all animate-float pointer-events-auto group/ans"
-          style={{
-            left: `${ans.x}%`,
-            top: `${ans.y}%`,
-            // @ts-ignore
-            "--float-duration": `${ans.duration}s`,
-            "--float-delay": `${ans.delay}s`,
-          }}
-          onClick={(e) => {
-            e.stopPropagation();
-            if (onAnswerClick) {
-              onAnswerClick(ans.id);
-            } else {
-              alert(`정답! ${ans.label}을(를) 찾으셨나요?`);
-            }
-          }}
-        >
-          {ans.imageUrl && (
-            <Image
-              src={ans.imageUrl}
-              alt={ans.label}
-              width={96}
-              height={96}
-              unoptimized
-              priority
-              className="object-cover w-full h-full"
-            />
-          )}
-          <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover/ans:opacity-100 transition-opacity z-10">
-            <span className="text-white text-[10px] font-bold px-1 text-center">
-              {ans.label}
-            </span>
-          </div>
-        </button>
-      ))}
+      <MovingAnswerOptions
+        candidates={candidates}
+        onAnswerClick={onAnswerClick}
+        wrongAnswerId={wrongAnswerId}
+      />
 
       <div className="relative w-full h-full min-h-[600px] flex items-center justify-center p-4">
         {/* eslint-disable-next-line @next/next/no-img-element */}

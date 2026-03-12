@@ -1,103 +1,52 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from "react";
+import React from "react";
 import "./game.css";
 
 import { MagicEyeHeader } from "./components/header-controls";
 import { GameBoardContainer } from "./components/game-board-container";
-import { CATEGORIES } from "@/consts/CATEGORIES";
-import { QuizResponse, QuizCandidate } from "@/app/types/quiz";
-import { AnswerOption } from "@/app/types/answer-option";
-import { ImageData } from "@/app/types/image-data";
-
-const API_BASE_URL =
-  process.env.NEXT_PUBLIC_SERVER_URL || "http://localhost:8080";
+import { useQuiz } from "./hooks/use-quiz";
 
 export default function MagicEyeGame() {
-  const [selectedCategoryId, setSelectedCategoryId] = useState<string>(
-    CATEGORIES[0].id,
-  );
-  const [selectedImageData, setSelectedImageData] = useState<ImageData | null>(
-    null,
-  );
-  const [answers, setAnswers] = useState<AnswerOption[]>([]);
-  const [loading, setLoading] = useState<boolean>(false);
-  const [error, setError] = useState<string | null>(null);
-  const [correctAnswerId, setCorrectAnswerId] = useState<number | null>(null);
-
-  const fetchQuiz = useCallback(async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const response = await fetch(`${API_BASE_URL}/magic-eye/quiz`);
-      if (!response.ok) {
-        throw new Error("퀴즈 데이터를 가져오는데 실패했습니다.");
-      }
-      const responseData: QuizResponse = await response.json();
-      console.log("받은 퀴즈 데이터:", responseData);
-
-      const quizData = responseData.data;
-
-      // 데이터 구조 안전하게 확인
-      if (quizData && quizData.candidates && quizData.candidates.length > 0) {
-        const firstCandidate = quizData.candidates[0];
-        setSelectedImageData({
-          name: firstCandidate.display_name,
-          url: firstCandidate.problem_url,
-        });
-
-        const mappedAnswers: AnswerOption[] = quizData.candidates.map((candidate) => ({
-          id: candidate.id.toString(),
-          label: candidate.display_name,
-          imageUrl: candidate.answer_url,
-          x: Math.random() * 80 + 10,
-          y: Math.random() * 80 + 10,
-          duration: 10 + Math.random() * 10,
-          delay: -Math.random() * 20,
-        }));
-        setAnswers(mappedAnswers);
-        setCorrectAnswerId(quizData.correct_answer.id);
-      }
-    } catch (err) {
-      console.error(err);
-      setError(err instanceof Error ? err.message : "알 수 없는 오류가 발생했습니다.");
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    fetchQuiz();
-  }, [fetchQuiz]);
-
-  useEffect(() => {
-    if (!selectedImageData || answers.length === 0) return;
-    const moveInterval = setInterval(() => {
-      setAnswers((prevAnswers) =>
-        prevAnswers.map((ans) => ({
-          ...ans,
-          x: Math.random() * 80 + 10,
-          y: Math.random() * 80 + 10,
-        })),
-      );
-    }, 5000);
-    return () => clearInterval(moveInterval);
-  }, [selectedImageData, answers.length]);
-
-  const handleAnswerClick = (ansId: string) => {
-    if (parseInt(ansId) === correctAnswerId) {
-      alert("정답입니다! 🎉");
-      fetchQuiz(); // 다음 퀴즈로
-    } else {
-      alert("아쉬워요, 다시 한번 찾아보세요! 🦖");
-    }
-  };
+  const {
+    candidateCount,
+    setCandidateCount,
+    selectedImageData,
+    candidates,
+    loading,
+    error,
+    wrongAnswerId,
+    fetchQuiz,
+    handleAnswerClick,
+    closeGame,
+  } = useQuiz();
 
   return (
     <div className="min-h-screen p-8 font-sans bg-zinc-50 dark:bg-black text-black dark:text-white">
       <MagicEyeHeader />
 
       <main className="max-w-[1600px] mx-auto">
+        <div className="mb-8 flex items-center justify-between bg-white dark:bg-zinc-900 p-6 rounded-2xl shadow-sm border border-zinc-200 dark:border-zinc-800">
+          <div className="flex items-center gap-4">
+            <span className="text-sm font-bold opacity-70">정답지 개수 설정:</span>
+            <input 
+              type="range" 
+              min="3" 
+              max="10" 
+              value={candidateCount} 
+              onChange={(e) => setCandidateCount(parseInt(e.target.value))}
+              className="w-32 h-2 bg-zinc-200 dark:bg-zinc-700 rounded-lg appearance-none cursor-pointer accent-amber-500"
+            />
+            <span className="text-lg font-black text-amber-500 w-8">{candidateCount}</span>
+          </div>
+          <button 
+            onClick={fetchQuiz}
+            className="px-6 py-2 bg-zinc-900 dark:bg-white text-white dark:text-black rounded-xl font-bold hover:scale-105 transition-transform active:scale-95"
+          >
+            새로운 퀴즈 생성 🔄
+          </button>
+        </div>
+
         {loading && !selectedImageData ? (
           <div className="flex flex-col items-center justify-center min-h-[700px]">
             <div className="text-6xl animate-spin mb-8">🌀</div>
@@ -106,10 +55,11 @@ export default function MagicEyeGame() {
         ) : (
           <GameBoardContainer
             selectedImageData={selectedImageData}
-            answers={answers}
-            onClose={() => setSelectedImageData(null)}
+            candidates={candidates}
+            onClose={closeGame}
             onAnswerClick={handleAnswerClick}
             onRestart={fetchQuiz}
+            wrongAnswerId={wrongAnswerId}
           />
         )}
         {error && (

@@ -1,5 +1,5 @@
 import React from "react";
-import { AnswerOption, ImageData } from "@/app/types";
+import { ImageData, QuizCandidate } from "@/app/types";
 import { useAiHint } from "@/app/hooks/use-ai-hint";
 import { GameBoardEmptyView } from "./views/game-board-empty-view";
 import { GameBoardHeaderView } from "./views/game-board-header-view";
@@ -8,18 +8,20 @@ import { GameBoardFooterView } from "./views/game-board-footer-view";
 
 interface GameBoardContainerProps {
   selectedImageData: ImageData | null;
-  answers: AnswerOption[];
+  candidates: QuizCandidate[];
   onClose: () => void;
   onAnswerClick?: (id: string) => void;
   onRestart?: () => void;
+  wrongAnswerId?: string | null;
 }
 
 export const GameBoardContainer: React.FC<GameBoardContainerProps> = ({
   selectedImageData,
-  answers,
+  candidates,
   onClose,
   onAnswerClick,
   onRestart,
+  wrongAnswerId,
 }) => {
   const { aiLoading, aiHint, error, aiLevel, setAiLevel, getAiHint } =
     useAiHint(selectedImageData?.url);
@@ -45,8 +47,9 @@ export const GameBoardContainer: React.FC<GameBoardContainerProps> = ({
           imageUrl={selectedImageData.url}
           aiHint={aiHint}
           aiLevel={aiLevel}
-          answers={answers}
+          candidates={candidates}
           onAnswerClick={onAnswerClick}
+          wrongAnswerId={wrongAnswerId}
         />
       </div>
     </section>
