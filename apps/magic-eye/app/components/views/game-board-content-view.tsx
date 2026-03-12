@@ -7,6 +7,7 @@ interface GameBoardContentViewProps {
   aiHint: AiHint | null;
   aiLevel: number;
   answers: AnswerOption[];
+  onAnswerClick?: (id: string) => void;
 }
 
 export const GameBoardContentView: React.FC<GameBoardContentViewProps> = ({
@@ -14,6 +15,7 @@ export const GameBoardContentView: React.FC<GameBoardContentViewProps> = ({
   aiHint,
   aiLevel,
   answers,
+  onAnswerClick,
 }) => {
   return (
     <div className="relative flex-grow border-8 border-zinc-100 dark:border-zinc-800 rounded-3xl overflow-hidden cursor-pointer group flex justify-center items-center bg-zinc-200 dark:bg-zinc-950 shadow-inner min-h-[600px]">
@@ -49,19 +51,23 @@ export const GameBoardContentView: React.FC<GameBoardContentViewProps> = ({
           }}
           onClick={(e) => {
             e.stopPropagation();
-            alert(`정답! ${ans.label}을(를) 찾으셨나요?`);
+            if (onAnswerClick) {
+              onAnswerClick(ans.id);
+            } else {
+              alert(`정답! ${ans.label}을(를) 찾으셨나요?`);
+            }
           }}
         >
           {ans.imageUrl && (
-            <div className="relative w-full h-full">
-              <Image
-                src={ans.imageUrl}
-                alt={ans.label}
-                fill
-                sizes="96px"
-                className="object-cover"
-              />
-            </div>
+            <Image
+              src={ans.imageUrl}
+              alt={ans.label}
+              width={96}
+              height={96}
+              unoptimized
+              priority
+              className="object-cover w-full h-full"
+            />
           )}
           <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover/ans:opacity-100 transition-opacity z-10">
             <span className="text-white text-[10px] font-bold px-1 text-center">
@@ -72,13 +78,17 @@ export const GameBoardContentView: React.FC<GameBoardContentViewProps> = ({
       ))}
 
       <div className="relative w-full h-full min-h-[600px] flex items-center justify-center p-4">
-        <Image
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
           src={imageUrl}
           alt="Magic Eye Problem"
-          fill
-          priority
-          sizes="(max-width: 1600px) 100vw, 1200px"
-          className="object-contain p-4 z-10"
+          className="max-w-full max-h-full object-contain z-10 shadow-lg rounded-lg"
+          style={{ 
+            imageRendering: 'auto',
+            width: 'auto',
+            height: 'auto',
+            display: 'block'
+          }}
         />
       </div>
 

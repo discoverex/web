@@ -20,26 +20,25 @@ export const GameBoardHeaderView: React.FC<GameBoardHeaderViewProps> = ({
   onClose,
 }) => {
   return (
-    <div className="mb-6 flex justify-between items-center bg-zinc-50 dark:bg-zinc-950 p-4 rounded-2xl border border-zinc-100 dark:border-zinc-800">
-      <div className="flex flex-col">
-        <h2 className="text-base font-bold">
-          파일명: <span className="font-mono text-amber-500">{fileName}</span>
-        </h2>
+    <div className="mb-6 flex flex-wrap justify-center items-center gap-6 bg-zinc-50 dark:bg-zinc-950 p-6 rounded-3xl border border-zinc-100 dark:border-zinc-800 shadow-sm">
+      <div className="flex flex-col items-center">
         {error && <p className="text-[10px] text-red-500 mt-1">{error}</p>}
       </div>
 
-      <div className="flex items-center gap-3">
-        <div className="flex items-center gap-2 mr-4">
+      <div className="h-8 w-px bg-zinc-200 dark:bg-zinc-800 hidden sm:block" />
+
+      <div className="flex items-center gap-4">
+        <div className="flex items-center gap-3 bg-white dark:bg-zinc-900 px-4 py-2 rounded-2xl border border-zinc-200 dark:border-zinc-800 shadow-sm">
           <span className="text-[10px] font-bold opacity-50 uppercase tracking-widest">
             레벨
           </span>
           <select
             value={aiLevel}
             onChange={(e) => onAiLevelChange(Number(e.target.value))}
-            className="bg-zinc-100 dark:bg-zinc-800 text-xs px-2 py-1 rounded-md font-bold focus:outline-none"
+            className="bg-transparent text-xs font-black focus:outline-none text-zinc-900 dark:text-white cursor-pointer"
           >
             {[...Array(10)].map((_, i) => (
-              <option key={i + 1} value={i + 1}>
+              <option key={i + 1} value={i + 1} className="bg-white dark:bg-zinc-900 text-zinc-900 dark:text-white">
                 {i + 1}
               </option>
             ))}
@@ -49,17 +48,17 @@ export const GameBoardHeaderView: React.FC<GameBoardHeaderViewProps> = ({
         <button
           onClick={onGetAiHint}
           disabled={aiLoading}
-          className={`px-4 py-2 rounded-xl text-xs font-bold transition-all shadow-md ${
+          className={`px-6 py-3 rounded-2xl text-xs font-black transition-all shadow-lg ${
             aiLoading
               ? "bg-zinc-200 text-zinc-400 cursor-not-allowed"
-              : "bg-gradient-to-r from-purple-600 to-indigo-600 text-white hover:scale-105 active:scale-95"
+              : "bg-gradient-to-r from-purple-600 to-indigo-600 text-white hover:scale-105 active:scale-95 shadow-purple-500/20"
           }`}
         >
           {aiLoading ? "🤖 AI 분석 중..." : "🤖 AI 훈수 듣기"}
         </button>
         <button
           onClick={onClose}
-          className="px-4 py-2 bg-red-50 text-red-500 rounded-xl text-xs font-bold hover:bg-red-500 hover:text-white transition-all"
+          className="px-6 py-3 bg-red-50 text-red-500 rounded-2xl text-xs font-black hover:bg-red-500 hover:text-white transition-all shadow-sm active:scale-95"
         >
           닫기
         </button>

@@ -10,24 +10,26 @@ interface GameBoardContainerProps {
   selectedImageData: ImageData | null;
   answers: AnswerOption[];
   onClose: () => void;
-  selectedCategoryLabel: string;
+  onAnswerClick?: (id: string) => void;
+  onRestart?: () => void;
 }
 
 export const GameBoardContainer: React.FC<GameBoardContainerProps> = ({
   selectedImageData,
   answers,
   onClose,
-  selectedCategoryLabel,
+  onAnswerClick,
+  onRestart,
 }) => {
   const { aiLoading, aiHint, error, aiLevel, setAiLevel, getAiHint } =
     useAiHint(selectedImageData?.url);
 
   if (!selectedImageData) {
-    return <GameBoardEmptyView />;
+    return <GameBoardEmptyView onRestart={onRestart} />;
   }
 
   return (
-    <section className="lg:col-span-4 bg-white dark:bg-zinc-900 p-8 rounded-3xl shadow-2xl border border-zinc-200 dark:border-zinc-800 flex flex-col items-center justify-center min-h-[700px] relative overflow-hidden">
+    <section className="lg:col-span-full bg-white dark:bg-zinc-900 p-8 rounded-3xl shadow-2xl border border-zinc-200 dark:border-zinc-800 flex flex-col items-center justify-center min-h-[700px] relative overflow-hidden">
       <div className="w-full h-full flex flex-col">
         <GameBoardHeaderView
           fileName={selectedImageData.name.split("/").pop() || ""}
@@ -44,9 +46,8 @@ export const GameBoardContainer: React.FC<GameBoardContainerProps> = ({
           aiHint={aiHint}
           aiLevel={aiLevel}
           answers={answers}
+          onAnswerClick={onAnswerClick}
         />
-
-        <GameBoardFooterView selectedCategoryLabel={selectedCategoryLabel} />
       </div>
     </section>
   );
