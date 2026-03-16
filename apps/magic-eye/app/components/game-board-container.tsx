@@ -14,6 +14,7 @@ interface GameBoardContainerProps {
   onAnswerClick?: (id: string) => void;
   onRestart?: () => void;
   wrongAnswerId?: string | null;
+  isCorrect?: boolean;
 }
 
 export const GameBoardContainer: React.FC<GameBoardContainerProps> = ({
@@ -24,6 +25,7 @@ export const GameBoardContainer: React.FC<GameBoardContainerProps> = ({
   onAnswerClick,
   onRestart,
   wrongAnswerId,
+  isCorrect,
 }) => {
   const { aiLoading, aiHint, error, aiLevel, setAiLevel, getAiHint } =
     useAiHint(selectedImageData?.url);
@@ -33,7 +35,7 @@ export const GameBoardContainer: React.FC<GameBoardContainerProps> = ({
   }
 
   return (
-    <section className="lg:col-span-full bg-white dark:bg-zinc-900 p-8 rounded-3xl shadow-2xl border border-zinc-200 dark:border-zinc-800 flex flex-col items-center justify-center min-h-[700px] relative overflow-hidden">
+    <section className="lg:col-span-full bg-white dark:bg-zinc-900 p-8 rounded-3xl shadow-2xl border border-zinc-200 dark:border-zinc-800 flex flex-col items-center justify-center min-h-[600px] relative overflow-hidden">
       <div className="w-full h-full flex flex-col">
         <GameBoardHeaderView
           fileName={selectedImageData.name.split("/").pop() || ""}
@@ -56,6 +58,8 @@ export const GameBoardContainer: React.FC<GameBoardContainerProps> = ({
           candidates={candidates}
           onAnswerClick={onAnswerClick}
           wrongAnswerId={wrongAnswerId}
+          correctAnswerId={correctAnswerId}
+          isCorrect={isCorrect}
         />
       </div>
     </section>
