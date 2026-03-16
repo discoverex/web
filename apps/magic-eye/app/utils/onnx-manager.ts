@@ -8,7 +8,7 @@ class OnnxManager {
   private currentRejecter: ((reason: any) => void) | null = null;
 
   // 모델 저장 위치 (사용자 버킷 기준)
-  private readonly MODEL_BASE_URL = `https://storage.googleapis.com/${process.env.NEXT_PUBLIC_BUCKET_NAME}/models/onnx`;
+  private readonly MODEL_BASE_URL = `https://storage.googleapis.com/${process.env.NEXT_PUBLIC_MODEL_BUCKET_NAME}/models/onnx`;
 
   private constructor() {
     if (typeof window !== "undefined") {
