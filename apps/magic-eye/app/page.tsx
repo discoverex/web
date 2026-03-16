@@ -6,6 +6,8 @@ import "./game.css";
 import { GameBoardContainer } from "./components/game-board-container";
 import { GameLobbyView } from "./components/views/game-lobby-view";
 import { useQuiz } from "./hooks/use-quiz";
+import { useGameStore } from "../store/use-game-store";
+import { submitScore } from "../services/score-service";
 
 type GameState = "LOBBY" | "READY" | "COUNTDOWN" | "PLAYING" | "CORRECT";
 
@@ -15,6 +17,7 @@ export default function MagicEyeGame() {
     setCandidateCount,
     selectedImageData,
     candidates,
+    correctAnswerId,
     error,
     wrongAnswerId,
     fetchQuiz,
@@ -22,11 +25,16 @@ export default function MagicEyeGame() {
     closeGame,
   } = useQuiz();
 
+  const { game_id, game_type, score, startGame, resetGame } = useGameStore();
+
   const [gameState, setGameState] = useState<GameState>("LOBBY");
   const [countdown, setCountdown] = useState(3);
 
   // 게임 시작 및 퀴즈 불러오기 공통 로직
   const loadNextQuiz = async () => {
+    if (gameState === "LOBBY") {
+      startGame();
+    }
     setGameState("READY");
     const success = await fetchQuiz();
     if (success) {
@@ -35,6 +43,19 @@ export default function MagicEyeGame() {
     } else {
       setGameState("LOBBY");
     }
+  };
+
+  const returnToLobby = async () => {
+    if (game_id && score > 0) {
+      try {
+        await submitScore({ game_id, game_type, score });
+      } catch (err) {
+        console.error("Failed to submit score", err);
+      }
+    }
+    resetGame();
+    setGameState("LOBBY");
+    closeGame();
   };
 
   // 카운트다운 로직
@@ -59,7 +80,15 @@ export default function MagicEyeGame() {
   };
 
   return (
-    <div className="w-full max-w-[1600px] mx-auto py-4 font-sans text-black dark:text-white">
+    <div className={`w-full max-w-[1600px] mx-auto py-4 font-sans text-black dark:text-white ${wrongAnswerId ? "animate-shake" : ""}`}>
+      {/* 점수판 표시 */}
+      {gameState !== "LOBBY" && (
+        <div className="fixed top-20 right-8 z-50 bg-white/80 dark:bg-zinc-900/80 backdrop-blur-md px-6 py-3 rounded-2xl shadow-xl border border-zinc-200 dark:border-zinc-800 flex flex-col items-center animate-in slide-in-from-right duration-500">
+          <span className="text-sm font-bold opacity-50 uppercase tracking-widest">SCORE</span>
+          <span className="text-4xl font-black text-amber-500">{score}</span>
+        </div>
+      )}
+
       <main className="w-full">
         
         {/* 1. 로비 화면 */}
@@ -103,10 +132,8 @@ export default function MagicEyeGame() {
             <GameBoardContainer
               selectedImageData={selectedImageData}
               candidates={candidates}
-              onClose={() => {
-                setGameState("LOBBY");
-                closeGame();
-              }}
+              correctAnswerId={correctAnswerId}
+              onClose={returnToLobby}
               onAnswerClick={(id) => handleAnswerClick(id, onCorrectAnswer)}
               onRestart={loadNextQuiz}
               wrongAnswerId={wrongAnswerId}
@@ -118,7 +145,7 @@ export default function MagicEyeGame() {
           <div className="mt-8 p-6 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 rounded-2xl text-center font-bold border border-red-100 dark:border-red-900/30">
             {error}
             <button 
-              onClick={() => setGameState("LOBBY")}
+              onClick={returnToLobby}
               className="ml-4 underline hover:opacity-80"
             >
               로비로 돌아가기

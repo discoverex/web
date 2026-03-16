@@ -9,6 +9,7 @@ import { GameBoardFooterView } from "./views/game-board-footer-view";
 interface GameBoardContainerProps {
   selectedImageData: ImageData | null;
   candidates: QuizCandidate[];
+  correctAnswerId: number | null;
   onClose: () => void;
   onAnswerClick?: (id: string) => void;
   onRestart?: () => void;
@@ -18,6 +19,7 @@ interface GameBoardContainerProps {
 export const GameBoardContainer: React.FC<GameBoardContainerProps> = ({
   selectedImageData,
   candidates,
+  correctAnswerId,
   onClose,
   onAnswerClick,
   onRestart,
@@ -39,7 +41,11 @@ export const GameBoardContainer: React.FC<GameBoardContainerProps> = ({
           aiLevel={aiLevel}
           aiLoading={aiLoading}
           onAiLevelChange={setAiLevel}
-          onGetAiHint={getAiHint}
+          onGetAiHint={() => {
+            if (correctAnswerId !== null) {
+              getAiHint(candidates, correctAnswerId);
+            }
+          }}
           onClose={onClose}
         />
 
