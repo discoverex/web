@@ -59,6 +59,7 @@ export function useQuiz() {
     setCandidateCount,
     selectedImageData,
     candidates,
+    correctAnswerId,
     loading,
     error,
     wrongAnswerId,

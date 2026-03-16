@@ -17,6 +17,7 @@ export default function MagicEyeGame() {
     setCandidateCount,
     selectedImageData,
     candidates,
+    correctAnswerId,
     error,
     wrongAnswerId,
     fetchQuiz,
@@ -79,7 +80,7 @@ export default function MagicEyeGame() {
   };
 
   return (
-    <div className="w-full max-w-[1600px] mx-auto py-4 font-sans text-black dark:text-white">
+    <div className={`w-full max-w-[1600px] mx-auto py-4 font-sans text-black dark:text-white ${wrongAnswerId ? "animate-shake" : ""}`}>
       {/* 점수판 표시 */}
       {gameState !== "LOBBY" && (
         <div className="fixed top-20 right-8 z-50 bg-white/80 dark:bg-zinc-900/80 backdrop-blur-md px-6 py-3 rounded-2xl shadow-xl border border-zinc-200 dark:border-zinc-800 flex flex-col items-center animate-in slide-in-from-right duration-500">
@@ -131,6 +132,7 @@ export default function MagicEyeGame() {
             <GameBoardContainer
               selectedImageData={selectedImageData}
               candidates={candidates}
+              correctAnswerId={correctAnswerId}
               onClose={returnToLobby}
               onAnswerClick={(id) => handleAnswerClick(id, onCorrectAnswer)}
               onRestart={loadNextQuiz}
