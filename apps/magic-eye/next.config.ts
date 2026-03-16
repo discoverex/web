@@ -2,18 +2,18 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   output: "standalone",
-  // 1. Turbopack 설정 (Next.js 16+ 대응)
+  // Next.js 16에서 Turbopack 사용 시 webpack 설정이 있으면
+  // 반드시 experimental.turbo 설정(비어있더라도) 명시
   experimental: {
     turbo: {
       resolveAlias: {
-        // 브라우저에서 필요 없는 노드 모듈을 빈 모듈로 대체
         fs: "empty-module",
         path: "empty-module",
       },
     },
-  },
+  } as never, // 👈 타입 정의 미흡으로 인한 'turbo' 키 오류 해결
 
-  // 2. 기존 Webpack 설정 (하위 호환 및 특정 빌드 환경용)
+  // 하위 호환 및 특정 환경용 webpack 설정
   webpack: (config) => {
     config.resolve.fallback = { fs: false, path: false };
     return config;
