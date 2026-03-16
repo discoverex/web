@@ -9,6 +9,8 @@ interface GameBoardContentViewProps {
   candidates: QuizCandidate[];
   onAnswerClick?: (id: string) => void;
   wrongAnswerId?: string | null;
+  correctAnswerId?: number | null;
+  isCorrect?: boolean;
 }
 
 const HINT_MESSAGES = [
@@ -35,6 +37,14 @@ const NAG_MESSAGES = [
   (label: string) => `다시 말해줄게. 내 직감은 '${label}'이야!`,
 ];
 
+const SURPRISED_MESSAGES = [
+  (label: string, actual: string) => `헐! 이게 '${actual}'이었다고? 난 당연히 '${label}'인 줄 알았는데...`,
+  (label: string, actual: string) => `어라? 분명 '${label}' 같았는데 '${actual}'이었네! 내 눈이 정말 어떻게 됐나 봐.`,
+  (label: string, actual: string) => `말도 안 돼! 이게 '${actual}'이라니... '${label}'이 아니었단 말이야?`,
+  (label: string, actual: string) => `허걱, '${actual}'이었구나! 난 정말 '${label}'인 줄로만 알았어. 미안!`,
+  (label: string, actual: string) => `앗... 내 정체가 들통나겠는걸? '${label}'인 줄 알았는데 '${actual}'이었네!`,
+];
+
 export const GameBoardContentView: React.FC<GameBoardContentViewProps> = ({
   imageUrl,
   aiHint,
@@ -42,6 +52,8 @@ export const GameBoardContentView: React.FC<GameBoardContentViewProps> = ({
   candidates,
   onAnswerClick,
   wrongAnswerId,
+  correctAnswerId,
+  isCorrect,
 }) => {
   const [showHint, setShowHint] = useState(false);
   const [isExiting, setIsExiting] = useState(false);
@@ -73,18 +85,32 @@ export const GameBoardContentView: React.FC<GameBoardContentViewProps> = ({
 
   // 새로운 힌트가 들어오면 표시
   useEffect(() => {
-    if (aiHint) {
+    if (aiHint && !isCorrect) {
       const randomTemplate = HINT_MESSAGES[Math.floor(Math.random() * HINT_MESSAGES.length)];
       setCurrentMessage(randomTemplate(aiHint.label));
       setDuration(5000); // 힌트는 5초간 표시
       setShowHint(true);
       setIsExiting(false);
     }
-  }, [aiHint, aiLevel]);
+  }, [aiHint, aiLevel, isCorrect]);
+
+  // 정답을 맞혔을 때 공룡이 틀렸었다면 놀라는 반응
+  useEffect(() => {
+    if (isCorrect && aiHint && correctAnswerId !== null) {
+      const correctAnswer = candidates.find(c => c.id === correctAnswerId);
+      if (correctAnswer && aiHint.label !== correctAnswer.display_name) {
+        const randomSurprised = SURPRISED_MESSAGES[Math.floor(Math.random() * SURPRISED_MESSAGES.length)];
+        setCurrentMessage(randomSurprised(aiHint.label, correctAnswer.display_name));
+        setDuration(4000); // 놀라는 건 좀 더 길게(4초)
+        setShowHint(true);
+        setIsExiting(false);
+      }
+    }
+  }, [isCorrect, aiHint, correctAnswerId, candidates]);
 
   // 유저가 오답을 클릭했을 때의 반응 (떠난 후 재등장 포함)
   useEffect(() => {
-    if (wrongAnswerId && aiHint) {
+    if (wrongAnswerId && aiHint && !isCorrect) {
       const clickedCandidate = candidates.find(c => c.id.toString() === wrongAnswerId);
       if (!clickedCandidate) return;
 
@@ -110,12 +136,13 @@ export const GameBoardContentView: React.FC<GameBoardContentViewProps> = ({
         setDuration(1500); // 즉각 반응 후 1.5초 뒤 퇴장
       }
     }
-  }, [wrongAnswerId, aiHint, candidates, showHint, isExiting]);
+  }, [wrongAnswerId, aiHint, candidates, showHint, isExiting, isCorrect]);
 
   return (
-    <div className="relative flex-grow border-8 border-zinc-100 dark:border-zinc-800 rounded-3xl overflow-hidden cursor-pointer group flex justify-center items-center bg-zinc-200 dark:bg-zinc-950 shadow-inner min-h-[600px]">
+    <div className="relative flex-grow border-8 border-zinc-100 dark:border-zinc-800 rounded-3xl overflow-hidden cursor-pointer group flex justify-center items-center bg-zinc-200 dark:bg-zinc-950 shadow-inner min-h-[500px]">
+      {/* z-index를 60으로 설정하여 성공 오버레이(z-50)보다 위에 표시 */}
       {aiHint && showHint && (
-        <div className={`absolute top-10 right-10 z-30 flex items-end gap-3 ${isExiting ? "animate-exit-right" : "animate-hint"}`}>
+        <div className={`absolute top-10 right-10 z-[60] flex items-end gap-3 ${isExiting ? "animate-exit-right" : "animate-hint"}`}>
           <div className="bg-white dark:bg-zinc-800 p-4 rounded-2xl shadow-2xl border-2 border-purple-500 max-w-xs relative">
             <p className="text-sm font-bold text-purple-600 dark:text-purple-400">
               {`"${currentMessage}"`}
@@ -129,13 +156,21 @@ export const GameBoardContentView: React.FC<GameBoardContentViewProps> = ({
         </div>
       )}
 
+      {/* 정답 축하 오버레이 - 공룡 말풍선보다 아래(z-50)에 위치 */}
+      {isCorrect && (
+        <div className="absolute inset-0 z-50 flex flex-col items-center justify-center bg-green-500/90 backdrop-blur-sm animate-in zoom-in duration-300 pointer-events-none">
+          <div className="text-9xl mb-8">🎉</div>
+          <h2 className="text-6xl font-black text-white tracking-tighter text-center px-4">정답입니다!</h2>
+        </div>
+      )}
+
       <MovingAnswerOptions
         candidates={candidates}
         onAnswerClick={onAnswerClick}
         wrongAnswerId={wrongAnswerId}
       />
 
-      <div className="relative w-full h-full min-h-[600px] flex items-center justify-center p-4 pointer-events-none select-none">
+      <div className="relative w-full h-full min-h-[500px] flex items-center justify-center p-4 pointer-events-none select-none">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src={imageUrl}

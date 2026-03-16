@@ -73,19 +73,19 @@ export default function MagicEyeGame() {
   // 정답 처리 핸들러
   const onCorrectAnswer = () => {
     setGameState("CORRECT");
-    // 1초간 정답 축하 효과를 보여준 뒤 바로 다음 퀴즈 로드
+    // 3초간 정답 축하 효과를 보여준 뒤 바로 다음 퀴즈 로드 (공룡 대사 읽을 시간 확보)
     setTimeout(() => {
       loadNextQuiz();
-    }, 1000);
+    }, 3000);
   };
 
   return (
-    <div className={`w-full max-w-[1600px] mx-auto py-4 font-sans text-black dark:text-white ${wrongAnswerId ? "animate-shake" : ""}`}>
-      {/* 점수판 표시 */}
+    <div className={`w-full max-w-[1600px] mx-auto py-2 font-sans text-black dark:text-white ${wrongAnswerId ? "animate-shake" : ""}`}>
+      {/* 점수판 표시 - 위치를 살짝 아래로 조정하고 크기를 조금 줄임 */}
       {gameState !== "LOBBY" && (
-        <div className="fixed top-20 right-8 z-50 bg-white/80 dark:bg-zinc-900/80 backdrop-blur-md px-6 py-3 rounded-2xl shadow-xl border border-zinc-200 dark:border-zinc-800 flex flex-col items-center animate-in slide-in-from-right duration-500">
-          <span className="text-sm font-bold opacity-50 uppercase tracking-widest">SCORE</span>
-          <span className="text-4xl font-black text-amber-500">{score}</span>
+        <div className="fixed top-24 right-6 z-50 bg-white/80 dark:bg-zinc-900/80 backdrop-blur-md px-5 py-2 rounded-2xl shadow-xl border border-zinc-200 dark:border-zinc-800 flex flex-col items-center animate-in slide-in-from-right duration-500">
+          <span className="text-[10px] font-bold opacity-50 uppercase tracking-widest">SCORE</span>
+          <span className="text-3xl font-black text-amber-500 leading-none">{score}</span>
         </div>
       )}
 
@@ -118,16 +118,8 @@ export default function MagicEyeGame() {
           </div>
         )}
 
-        {/* 4. 정답 축하 화면 */}
-        {gameState === "CORRECT" && (
-          <div className="flex flex-col items-center justify-center min-h-[700px] bg-green-500 rounded-3xl shadow-2xl animate-in zoom-in duration-300">
-            <div className="text-9xl mb-8">🎉</div>
-            <h2 className="text-6xl font-black text-white tracking-tighter">정답입니다!</h2>
-          </div>
-        )}
-
-        {/* 5. 실제 게임 화면 */}
-        {gameState === "PLAYING" && (
+        {/* 4. 실제 게임 화면 (정답 상태 포함) */}
+        {(gameState === "PLAYING" || gameState === "CORRECT") && (
           <div className="flex flex-col gap-8 animate-in fade-in zoom-in duration-500">
             <GameBoardContainer
               selectedImageData={selectedImageData}
@@ -137,6 +129,7 @@ export default function MagicEyeGame() {
               onAnswerClick={(id) => handleAnswerClick(id, onCorrectAnswer)}
               onRestart={loadNextQuiz}
               wrongAnswerId={wrongAnswerId}
+              isCorrect={gameState === "CORRECT"}
             />
           </div>
         )}
