@@ -11,7 +11,7 @@
     "NEXT_PUBLIC_SERVER_URL",
     "HF_TOKEN",
     "HF_REPO_ID",
-    "BUCKET_NAME",
+    "NEXT_PUBLIC_BUCKET_NAME",
     "GCP_SERVICE_ACCOUNT_JSON"
   ],
   "globalPassThroughEnv": ["NODE_ENV"],
