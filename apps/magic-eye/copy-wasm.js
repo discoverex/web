@@ -13,7 +13,7 @@ const extensions = ['.wasm', '.mjs', '.js'];
 
 console.log('--- ONNX 자산 복사 시작 (JS/WASM/MJS) ---');
 
-fs.readdirSync(srcDir).forEach(file => {
+fs.readdirSync(srcDir).forEach((file) => {
   if (extensions.includes(path.extname(file))) {
     const srcPath = path.join(srcDir, file);
     const destPath = path.join(destDir, file);

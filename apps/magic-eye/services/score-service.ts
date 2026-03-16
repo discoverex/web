@@ -1,9 +1,9 @@
-import { API_BASE_URL } from '../consts/API_BASE_URL'
+import { API_BASE_URL } from '@/consts/API_BASE_URL';
 
 export interface ScoreData {
-  game_id: string
-  game_type: string
-  score: number
+  game_id: string;
+  game_type: string;
+  score: number;
 }
 
 export async function submitScore(data: ScoreData) {
@@ -14,15 +14,15 @@ export async function submitScore(data: ScoreData) {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify(data),
-    })
+    });
 
     if (!response.ok) {
-      throw new Error(`Failed to submit score: ${response.statusText}`)
+      throw new Error(`Failed to submit score: ${response.statusText}`);
     }
 
-    return await response.json()
+    return await response.json();
   } catch (error) {
-    console.error('Error submitting score:', error)
-    throw error
+    console.error('Error submitting score:', error);
+    throw error;
   }
 }

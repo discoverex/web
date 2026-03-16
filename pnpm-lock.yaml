@@ -23,6 +23,9 @@ importers:
 
   apps/discoverex:
     dependencies:
+      '@repo/tailwind-config':
+        specifier: workspace:*
+        version: link:../../packages/tailwind-config
       '@repo/ui':
         specifier: workspace:*
         version: link:../../packages/ui
@@ -72,6 +75,9 @@ importers:
 
   apps/game-hub:
     dependencies:
+      '@repo/tailwind-config':
+        specifier: workspace:*
+        version: link:../../packages/tailwind-config
       '@repo/ui':
         specifier: workspace:*
         version: link:../../packages/ui
@@ -136,6 +142,9 @@ importers:
       '@google-cloud/storage':
         specifier: ^7.19.0
         version: 7.19.0
+      '@repo/tailwind-config':
+        specifier: workspace:*
+        version: link:../../packages/tailwind-config
       '@repo/ui':
         specifier: workspace:*
         version: link:../../packages/ui
@@ -221,6 +230,15 @@ importers:
       typescript-eslint:
         specifier: ^8.50.0
         version: 8.50.0(eslint@9.39.1(jiti@2.6.1))(typescript@5.9.2)
+
+  packages/tailwind-config:
+    devDependencies:
+      daisyui:
+        specifier: latest
+        version: 5.5.19
+      tailwindcss:
+        specifier: latest
+        version: 4.2.1
 
   packages/typescript-config: {}
 

@@ -1,0 +1,11 @@
+# 라이브러리 제외
+node_modules/
+
+# 빌드 결과물 제외
+.next/
+out/
+build/
+dist/
+
+# 공용 자산 제외
+public/workers/ort.*

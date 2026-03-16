@@ -5,32 +5,34 @@ export async function preprocessImage(imageUrl: string): Promise<Float32Array> {
   try {
     // 1. fetch를 통해 이미지 데이터 가져오기 (CORS 확인 가능)
     const response = await fetch(imageUrl);
-    
+
     if (!response.ok) {
       if (response.status === 403) {
-        throw new Error("이미지 접근 권한이 없습니다 (403 Forbidden). URL이 만료되었거나 서명이 잘못되었을 수 있습니다.");
+        throw new Error(
+          '이미지 접근 권한이 없습니다 (403 Forbidden). URL이 만료되었거나 서명이 잘못되었을 수 있습니다.',
+        );
       }
       throw new Error(`이미지 다운로드 실패: ${response.status} ${response.statusText}`);
     }
 
     const blob = await response.blob();
-    
+
     // 2. 비트맵으로 변환 (브라우저 최적화 API 사용)
     const bitmap = await createImageBitmap(blob);
 
     // 3. Canvas를 이용한 리사이징
-    const canvas = document.createElement("canvas");
+    const canvas = document.createElement('canvas');
     canvas.width = 224;
     canvas.height = 224;
-    const ctx = canvas.getContext("2d", { willReadFrequently: true });
+    const ctx = canvas.getContext('2d', { willReadFrequently: true });
 
     if (!ctx) {
-      throw new Error("Canvas context 생성 실패");
+      throw new Error('Canvas context 생성 실패');
     }
 
     // PyTorch/sharp의 bilinear 보간법과 유사하게 설정
     ctx.imageSmoothingEnabled = true;
-    ctx.imageSmoothingQuality = "high";
+    ctx.imageSmoothingQuality = 'high';
     ctx.drawImage(bitmap, 0, 0, 224, 224);
 
     const imageData = ctx.getImageData(0, 0, 224, 224);
@@ -55,9 +57,9 @@ export async function preprocessImage(imageUrl: string): Promise<Float32Array> {
 
     return float32Data;
   } catch (err) {
-    if (err instanceof TypeError && err.message === "Failed to fetch") {
-      console.error("[CORS Error] GCS 버킷에 CORS 설정이 필요합니다.");
-      throw new Error("이미지 로드 중 CORS 오류가 발생했습니다. 서버의 CORS 설정을 확인해주세요.");
+    if (err instanceof TypeError && err.message === 'Failed to fetch') {
+      console.error('[CORS Error] GCS 버킷에 CORS 설정이 필요합니다.');
+      throw new Error('이미지 로드 중 CORS 오류가 발생했습니다. 서버의 CORS 설정을 확인해주세요.');
     }
     throw err;
   }

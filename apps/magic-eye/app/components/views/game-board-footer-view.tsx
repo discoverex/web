@@ -1,12 +1,10 @@
-import React from "react";
+import React from 'react';
 
 interface GameBoardFooterViewProps {
   selectedCategoryLabel: string;
 }
 
-export const GameBoardFooterView: React.FC<GameBoardFooterViewProps> = ({
-  selectedCategoryLabel,
-}) => {
+export const GameBoardFooterView: React.FC<GameBoardFooterViewProps> = ({ selectedCategoryLabel }) => {
   return (
     <div className="mt-6 flex justify-between items-center text-sm font-bold opacity-60">
       <span className="flex items-center gap-2">

@@ -1,14 +1,14 @@
-import type { NextConfig } from "next";
+import type { NextConfig } from 'next';
 
 const nextConfig: NextConfig = {
-  output: "standalone",
+  output: 'standalone',
   // Next.js 16에서 Turbopack 사용 시 webpack 설정이 있으면
   // 반드시 experimental.turbo 설정(비어있더라도) 명시
   experimental: {
     turbo: {
       resolveAlias: {
-        fs: "empty-module",
-        path: "empty-module",
+        fs: 'empty-module',
+        path: 'empty-module',
       },
     },
   } as never, // 👈 타입 정의 미흡으로 인한 'turbo' 키 오류 해결
@@ -23,16 +23,16 @@ const nextConfig: NextConfig = {
     qualities: [75, 100],
     remotePatterns: [
       {
-        protocol: "https",
-        hostname: "*.googleusercontent.com",
+        protocol: 'https',
+        hostname: '*.googleusercontent.com',
       },
       {
-        protocol: "https",
-        hostname: "storage.googleapis.com",
+        protocol: 'https',
+        hostname: 'storage.googleapis.com',
       },
       {
-        protocol: "https",
-        hostname: "picsum.photos",
+        protocol: 'https',
+        hostname: 'picsum.photos',
       },
     ],
   },

@@ -1,11 +1,11 @@
-import { useState, useEffect } from "react";
-import { AiHint, QuizCandidate } from "@/app/types";
-import { fetchAiHint } from "@/app/utils/get-ai-hint";
+import { useState, useEffect } from 'react';
+import { AiHint, QuizCandidate } from '@/app/types';
+import { fetchAiHint } from '@/app/utils/get-ai-hint';
 
 // 레벨에 따른 오답 확률을 계산하는 람다 함수
 const getErrorRate = (level: number): number => {
   if (level >= 10) return 0; // 10레벨은 특수 경우: 오답 확률 0% (항상 정답)
-  return (10 - level) / 10;  // 1레벨: 0.9, 5레벨: 0.5, 9레벨: 0.1
+  return (10 - level) / 10; // 1레벨: 0.9, 5레벨: 0.5, 9레벨: 0.1
 };
 
 export const useAiHint = (imageUrl?: string) => {
@@ -39,8 +39,7 @@ export const useAiHint = (imageUrl?: string) => {
         // 오답 중 하나를 랜덤하게 골라 힌트로 제공
         const wrongCandidates = candidates.filter((c) => c.id !== correctAnswerId);
         if (wrongCandidates.length > 0) {
-          const randomWrong =
-            wrongCandidates[Math.floor(Math.random() * wrongCandidates.length)];
+          const randomWrong = wrongCandidates[Math.floor(Math.random() * wrongCandidates.length)];
           setAiHint({
             label: randomWrong.display_name,
             score: 0.95, // 뻔뻔하게 높은 확신도
@@ -52,9 +51,7 @@ export const useAiHint = (imageUrl?: string) => {
         setAiHint(hint);
       }
     } catch (err) {
-      setError(
-        err instanceof Error ? err.message : "AI 분석 중 에러가 발생했습니다.",
-      );
+      setError(err instanceof Error ? err.message : 'AI 분석 중 에러가 발생했습니다.');
     } finally {
       setAiLoading(false);
     }
