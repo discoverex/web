@@ -1,6 +1,9 @@
 /* eslint-disable no-undef */
 importScripts('https://cdn.jsdelivr.net/npm/onnxruntime-web@1.24.3/dist/ort.min.js');
 
+// [중요] WASM 및 부속 파일들을 로컬 서버가 아닌 CDN에서 가져오도록 설정
+ort.env.wasm.wasmPaths = 'https://cdn.jsdelivr.net/npm/onnxruntime-web@1.24.3/dist/';
+
 // 모델 세션 캐시
 let sessions = {};
 
