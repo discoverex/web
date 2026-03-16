@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import { QuizCandidate } from "@/app/types/quiz";
 import { ImageData } from "@/app/types/image-data";
 import { quizService } from "../services/quiz-service";
+import { useGameStore } from "../../store/use-game-store";
 
 export function useQuiz() {
   const [candidateCount, setCandidateCount] = useState<number>(5);
@@ -11,6 +12,8 @@ export function useQuiz() {
   const [wrongAnswerId, setWrongAnswerId] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
+
+  const incrementScore = useGameStore((state) => state.incrementScore);
 
   const fetchQuiz = useCallback(async () => {
     setLoading(true);
@@ -35,6 +38,7 @@ export function useQuiz() {
     if (wrongAnswerId || correctAnswerId === null) return;
 
     if (parseInt(ansId) === correctAnswerId) {
+      incrementScore();
       // 정답인 경우 콜백 실행 (외부에서 상태 제어용)
       if (onCorrect) onCorrect();
     } else {

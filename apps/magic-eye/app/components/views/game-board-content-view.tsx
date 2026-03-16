@@ -15,7 +15,7 @@ const HINT_MESSAGES = [
   (label: string) => `음~ 내가 보기엔 분명히 '${label}'인데? 한 번 잘 찾아봐!`,
   (label: string) => `공룡의 직감으로 말해주지. 이건 '${label}'이야!`,
   (label: string) => `힌트 줄까? 저기 어딘가에 '${label}'이 숨어있어!`,
-  (label: string, level: number) => `내가 보기엔 저건 '${label}'이라네.`,
+  (label: string) => `내가 보기엔 저건 '${label}'이라네.`,
   (label: string) => `슬쩍 봤는데 '${label}' 모양이 보이더라고!`,
 ];
 
@@ -35,7 +35,7 @@ export const GameBoardContentView: React.FC<GameBoardContentViewProps> = ({
   useEffect(() => {
     if (aiHint) {
       const randomTemplate = HINT_MESSAGES[Math.floor(Math.random() * HINT_MESSAGES.length)];
-      setCurrentMessage(randomTemplate(aiHint.label, aiLevel));
+      setCurrentMessage(randomTemplate(aiHint.label));
 
       setShowHint(true);
       setIsExiting(false);
