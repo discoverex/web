@@ -5,59 +5,47 @@ importScripts('./ort.min.js');
 ort.env.wasm.wasmPaths = '/workers/';
 ort.env.wasm.numThreads = 1;
 
-let sessions = {};
+// 모델 데이터를 키로 세션을 캐싱 (메모리 관리 차원)
+let sessions = new Map();
 
 /**
- * 모델 URL을 받아 세션을 생성하거나 캐싱된 세션을 반환합니다.
+ * 모델 데이터(ArrayBuffer)를 받아 세션을 생성하거나 캐싱된 세션을 반환합니다.
  */
-async function getSession(modelUrl) {
-  if (sessions[modelUrl]) return sessions[modelUrl];
-
-  // URL에서 파일명만 추출하여 출력 (예: ai_lv5.onnx)
-  const fileName = modelUrl.includes('/') ? modelUrl.split('/').pop() : modelUrl;
-  console.log(`[WORKER] 📥 모델 다운로드 시작: ${fileName}`);
+async function getSession(modelData, modelId) {
+  // 이미 생성된 세션이 있다면 재사용
+  if (sessions.has(modelId)) return sessions.get(modelId);
 
   try {
-    // 모델 파일 다운로드
-    const response = await fetch(modelUrl);
-    if (!response.ok) throw new Error(`모델 다운로드 실패 (상태 코드: ${response.status})`);
-    const modelBuffer = await response.arrayBuffer();
-
-    console.log(`[WORKER] ✅ 다운로드 완료: ${(modelBuffer.byteLength / 1024 / 1024).toFixed(2)}MB`);
-
     let session;
-    let usedBackend = '';
+    let usedBackend;
+
+    // ONNX 세션 옵션 설정
+    const sessionOptions = {
+      executionProviders: ['webgpu', 'wasm'],
+      graphOptimizationLevel: 'all',
+    };
 
     try {
-      // 시도 1: WebGPU 우선 로드
-      session = await ort.InferenceSession.create(modelBuffer, {
-        executionProviders: ['webgpu', 'wasm'],
-        graphOptimizationLevel: 'all',
-        logSeverityLevel: 3,
-      });
-
-      // session.handler 이름을 확인하여 실제 사용된 백엔드 판별
-      const handlerName = session.handler?.constructor?.name || '';
-      usedBackend = handlerName.toLowerCase().includes('gpu') ? 'webgpu' : 'wasm';
+      // 시도 1: WebGPU 우선 로드 (전달받은 ArrayBuffer를 직접 사용)
+      session = await ort.InferenceSession.create(modelData, sessionOptions);
+      usedBackend = 'webgpu';
     } catch (gpuError) {
-      // 시도 2: WebGPU 실패 시 WASM(CPU)으로 강제 재시도
-      console.warn('⚠️ [AI 엔진] WebGPU 가속을 사용할 수 없어 WASM 모드로 전환합니다.');
-      session = await ort.InferenceSession.create(modelBuffer, {
+      console.warn(gpuError);
+      console.warn('⚠️ [AI 엔진] WebGPU 가속 실패. WASM 모드로 전환합니다.');
+      // 시도 2: WASM(CPU)으로 강제 재시도
+      session = await ort.InferenceSession.create(modelData, {
         executionProviders: ['wasm'],
-        graphOptimizationLevel: 'all',
-        logSeverityLevel: 3,
       });
       usedBackend = 'wasm';
     }
 
-    // --- 한국어 커스텀 메시지 출력 ---
     console.log(
       usedBackend === 'webgpu'
         ? '🚀 [AI 엔진] 기기 GPU 감지! 초고속 모드 가동.'
         : '💻 [AI 엔진] GPU 미감지. CPU 최적화(WASM) 모드로 전환합니다.',
     );
 
-    sessions[modelUrl] = session;
+    sessions.set(modelId, session);
     return session;
   } catch (err) {
     console.error(`❌ [AI 엔진] 세션 생성 중 치명적 오류:`, err);
@@ -66,16 +54,20 @@ async function getSession(modelUrl) {
 }
 
 /**
- * 메인 스레드로부터 메시지 수신 (추론 실행)
+ * 메인 스레드로부터 메시지 수신
  */
 self.onmessage = async (event) => {
-  const { type, modelUrl, inputData, inputName } = event.data;
+  const { type, modelData, inputData, inputName, level } = event.data;
 
   if (type === 'PREDICT') {
     try {
-      const session = await getSession(modelUrl);
+      // 캐시 키로 사용할 ID (예: ai_lv1.onnx)
+      const modelId = `level_${level}`;
 
-      // 입력 데이터 텐서 생성 (이미지 전처리 결과: [1, 3, 224, 224])
+      // getSession이 이제 fetch를 하지 않고 전달받은 데이터를 바로 사용합니다.
+      const session = await getSession(modelData, modelId);
+
+      // 입력 데이터 텐서 생성
       const tensor = new ort.Tensor('float32', inputData, [1, 3, 224, 224]);
       const feeds = { [inputName || session.inputNames[0]]: tensor };
 

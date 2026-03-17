@@ -1,3 +1,6 @@
+import { getModelInfo } from '@/app/services/get-magic-eye-finder';
+import { modelCache } from '@/app/utils/model-cache';
+
 /**
  * 클라이언트 사이드 ONNX 추론을 관리하는 싱글톤 클래스입니다.
  */
@@ -6,9 +9,6 @@ class OnnxManager {
   private worker: Worker | null = null;
   private currentResolver: ((value: Float32Array) => void) | null = null;
   private currentRejecter: ((reason: any) => void) | null = null;
-
-  // 모델 저장 위치 (사용자 버킷 기준)
-  private readonly MODEL_BASE_URL = `https://storage.googleapis.com/${process.env.NEXT_PUBLIC_MODEL_BUCKET_NAME}/models/onnx`;
 
   private constructor() {
     if (typeof window !== 'undefined') {
@@ -44,21 +44,40 @@ class OnnxManager {
     if (!this.worker) throw new Error('Worker가 초기화되지 않았습니다.');
     if (this.currentResolver) throw new Error('현재 다른 추론이 진행 중입니다.');
 
-    const modelUrl = `${this.MODEL_BASE_URL}/ai_lv${level}.onnx`;
+    try {
+      const modelName = `ai_lv${level}.onnx`;
+      const { singed_url, version } = await getModelInfo(level);
 
-    return new Promise((resolve, reject) => {
-      this.currentResolver = resolve;
-      this.currentRejecter = reject;
+      let modelData = await modelCache.getValidModel(modelName, version);
 
-      this.worker?.postMessage(
-        {
-          type: 'PREDICT',
-          modelUrl,
-          inputData,
-        },
-        [inputData.buffer], // Transferable Objects: 텐서 버퍼 소유권 이전으로 성능 최적화
-      );
-    });
+      if (!modelData) {
+        console.log(`[Cache Miss] ${modelName} 다운로드 중...`);
+        const response = await fetch(singed_url);
+        if (!response.ok) throw new Error('모델 다운로드 실패');
+        modelData = await response.arrayBuffer();
+        await modelCache.saveModel(modelName, version, modelData);
+      } else {
+        console.log(`[Cache Hit] ${modelName} 로컬 캐시 사용`);
+      }
+
+      return new Promise((resolve, reject) => {
+        this.currentResolver = resolve;
+        this.currentRejecter = reject;
+
+        // Worker에게 modelData(ArrayBuffer) 직접 전달
+        this.worker?.postMessage(
+          {
+            type: 'PREDICT',
+            modelData, // modelUrl 대신 직접 데이터를 보냄
+            inputData,
+          },
+          [modelData, inputData.buffer], // modelData도 Transferable로 전달하여 복사 비용 제거
+        );
+      });
+    } catch (error) {
+      console.error('추론 준비 중 오류 발생:', error);
+      throw error;
+    }
   }
 }
 
