@@ -196,6 +196,7 @@ export const MovingAnswerOptions: React.FC<MovingAnswerOptionsProps> = ({
                 unoptimized
                 priority
                 className="object-cover w-full h-full"
+                crossOrigin="anonymous"
               />
             )}
             <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover/ans:opacity-100 transition-opacity z-10">

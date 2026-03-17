@@ -1,21 +1,16 @@
-"use client";
+'use client';
 
-import React, { useRef } from "react";
-import Image from "next/image";
-import Lottie, { LottieRefCurrentProps } from "lottie-react";
-import { useAuth } from "@repo/ui/auth";
-import rexAnimation from "../public/rex-animation.json";
+import React, { useRef } from 'react';
+import Image from 'next/image';
+import Lottie, { LottieRefCurrentProps } from 'lottie-react';
+import { useAuth } from '@repo/ui/auth';
+import rexAnimation from '../public/rex-animation.json';
 
 export default function Home() {
   const { user, loading, logout } = useAuth();
   const lottieRef = useRef<LottieRefCurrentProps>(null);
 
-  if (loading)
-    return (
-      <div className="flex h-screen items-center justify-center">
-        인증 상태 확인 중...
-      </div>
-    );
+  if (loading) return <div className="flex h-screen items-center justify-center">인증 상태 확인 중...</div>;
 
   const handleLottieClick = () => {
     if (lottieRef.current) {
@@ -32,12 +27,7 @@ export default function Home() {
           onClick={handleLottieClick}
           title="클릭해서 애니메이션 재생"
         >
-          <Lottie
-            lottieRef={lottieRef}
-            animationData={rexAnimation}
-            loop={false}
-            autoplay={false}
-          />
+          <Lottie lottieRef={lottieRef} animationData={rexAnimation} loop={false} autoplay={false} />
         </div>
 
         <Image
@@ -47,6 +37,7 @@ export default function Home() {
           width={120}
           height={24}
           priority
+          crossOrigin="anonymous"
         />
 
         <div className="text-center space-y-4">
@@ -57,16 +48,11 @@ export default function Home() {
           {user ? (
             <div className="p-6 bg-green-50 dark:bg-green-900/20 rounded-xl border border-green-200 dark:border-green-800">
               <p className="text-lg font-medium text-green-800 dark:text-green-400">
-                ✅ 로그인 성공! 환영합니다,{" "}
-                <span className="font-bold underline">
-                  {user.displayName || user.email}
-                </span>
+                ✅ 로그인 성공! 환영합니다,{' '}
+                <span className="font-bold underline">{user.displayName || user.email}</span>
                 님.
               </p>
-              <button
-                onClick={logout}
-                className="mt-4 text-sm text-red-600 hover:underline cursor-pointer"
-              >
+              <button onClick={logout} className="mt-4 text-sm text-red-600 hover:underline cursor-pointer">
                 로그아웃
               </button>
             </div>

@@ -51,7 +51,10 @@
 
 ### 🖼 이미지 최적화 가이드
 
-- **`next/image` 권장**: 표준 `img` 태그 대신 Next.js의 `Image` 컴포넌트를 사용하여 이미지 최적화(크기 조정, 지연 로딩 등)를 적용합니다.
+- **`next/image` 권장**
+  - 표준 `img` 태그 대신 Next.js의 `Image` 컴포넌트를 사용하여 이미지 최적화(크기 조정, 지연 로딩 등)를 적용합니다.
+  - 외부 이미지 소스(GCS 등)를 사용하는 경우, **`crossOrigin="anonymous"`** 속성을 명시적으로 추가해야 합니다.
+    - **이유:** `apps/magic-eye/next.config.ts`의 COEP(Cross-Origin-Embedder-Policy) 설정이 `credentialless`로 되어 있어, 브라우저의 보안 정책상 외부 리소스를 Canvas 등에 그리거나 추론 모델에서 활용할 때 CORS 인증이 필요하기 때문입니다.
 - **필수 속성**: `width`, `height`를 명시하거나, 부모 요소가 `relative`일 경우 `fill` 속성과 `object-fit`을 적절히 활용합니다.
 
 ---

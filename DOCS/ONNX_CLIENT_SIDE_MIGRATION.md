@@ -110,7 +110,12 @@ function preprocess(canvas: HTMLCanvasElement): ort.Tensor {
   {
     "origin": ["*"], // 또는 특정 주소만 허용(권장) 
     "method": ["GET", "HEAD", "OPTIONS"],
-    "responseHeader": ["Content-Type", "Access-Control-Allow-Origin"],
+    "responseHeader": [
+      "Content-Type",
+      "Access-Control-Allow-Origin",
+      "Cross-Origin-Resource-Policy",
+      "x-goog-resumable"
+    ],
     "maxAgeSeconds": 3600
   }
 ]

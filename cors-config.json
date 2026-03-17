@@ -8,6 +8,7 @@
     "responseHeader": [
       "Content-Type",
       "Access-Control-Allow-Origin",
+      "Cross-Origin-Resource-Policy",
       "x-goog-resumable"
     ],
     "maxAgeSeconds": 3600

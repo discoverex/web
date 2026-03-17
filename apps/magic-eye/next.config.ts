@@ -1,6 +1,24 @@
 import type { NextConfig } from 'next';
 
 const nextConfig: NextConfig = {
+  // 1. 보안 헤더: SharedArrayBuffer 활성화 (WASM 멀티스레딩 필수)
+  async headers() {
+    return [
+      {
+        source: '/(.*)',
+        headers: [
+          {
+            key: 'Cross-Origin-Opener-Policy',
+            value: 'same-origin',
+          },
+          {
+            key: 'Cross-Origin-Embedder-Policy',
+            value: 'credentialless',
+          },
+        ],
+      },
+    ];
+  },
   output: 'standalone',
   // Next.js 16에서 Turbopack 사용 시 webpack 설정이 있으면
   // 반드시 experimental.turbo 설정(비어있더라도) 명시
