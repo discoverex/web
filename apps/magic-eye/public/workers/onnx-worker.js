@@ -18,8 +18,19 @@ async function getSession(modelData, modelId) {
 
     try {
       session = await ort.InferenceSession.create(modelData, options);
-    } catch (e) {
+      console.log('✅ WebGPU 세션 생성 성공');
+    } catch (gpuError) {
+      console.error('❌ WebGPU 생성 실패 원인:', gpuError.message);
       session = await ort.InferenceSession.create(modelData, { executionProviders: ['wasm'] });
+    }
+
+    const actualEP = session.handler.constructor.name;
+    console.log(`🔎 실제 사용 중인 EP: ${actualEP}`);
+
+    if (actualEP.includes('WebGpu')) {
+      console.log('🚀 [AI 엔진] GPU 가속 확정!');
+    } else {
+      console.log('💻 [AI 엔진] GPU 세션 생성은 성공했으나, 실제 연산은 WASM으로 우회됨.');
     }
 
     const handler = session.handler?.constructor?.name?.toLowerCase() || '';
