@@ -8,6 +8,8 @@ interface GameBoardHeaderViewProps {
   onAiLevelChange: (level: number) => void;
   onGetAiHint: () => void;
   onClose: () => void;
+  isCorrect?: boolean;
+  isSubmitting?: boolean;
 }
 
 export const GameBoardHeaderView: React.FC<GameBoardHeaderViewProps> = ({
@@ -17,6 +19,8 @@ export const GameBoardHeaderView: React.FC<GameBoardHeaderViewProps> = ({
   onAiLevelChange,
   onGetAiHint,
   onClose,
+  isCorrect,
+  isSubmitting,
 }) => {
   return (
     <div className="mb-6 flex flex-wrap justify-center items-center gap-6 bg-zinc-50 dark:bg-zinc-950 p-6 rounded-3xl border border-zinc-100 dark:border-zinc-800 shadow-sm">
@@ -32,7 +36,8 @@ export const GameBoardHeaderView: React.FC<GameBoardHeaderViewProps> = ({
           <select
             value={aiLevel}
             onChange={(e) => onAiLevelChange(Number(e.target.value))}
-            className="bg-transparent text-xs font-black focus:outline-none text-zinc-900 dark:text-white cursor-pointer"
+            disabled={isCorrect || isSubmitting}
+            className={`bg-transparent text-xs font-black focus:outline-none text-zinc-900 dark:text-white ${isCorrect || isSubmitting ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'}`}
           >
             {[...Array(10)].map((_, i) => (
               <option key={i + 1} value={i + 1} className="bg-white dark:bg-zinc-900 text-zinc-900 dark:text-white">
@@ -44,9 +49,9 @@ export const GameBoardHeaderView: React.FC<GameBoardHeaderViewProps> = ({
 
         <button
           onClick={onGetAiHint}
-          disabled={aiLoading}
+          disabled={aiLoading || isCorrect || isSubmitting}
           className={`px-6 py-3 rounded-2xl text-xs font-black transition-all shadow-lg ${
-            aiLoading
+            aiLoading || isCorrect || isSubmitting
               ? 'bg-zinc-200 text-zinc-400 cursor-not-allowed'
               : 'bg-gradient-to-r from-purple-600 to-indigo-600 text-white hover:scale-105 active:scale-95 shadow-purple-500/20'
           }`}
@@ -55,9 +60,14 @@ export const GameBoardHeaderView: React.FC<GameBoardHeaderViewProps> = ({
         </button>
         <button
           onClick={onClose}
-          className="px-6 py-3 bg-red-50 text-red-500 rounded-2xl text-xs font-black hover:bg-red-500 hover:text-white transition-all shadow-sm active:scale-95"
+          disabled={isCorrect || isSubmitting}
+          className={`px-6 py-3 rounded-2xl text-xs font-black transition-all shadow-sm active:scale-95 ${
+            isCorrect || isSubmitting
+              ? 'bg-zinc-100 text-zinc-300 cursor-not-allowed'
+              : 'bg-red-50 text-red-500 hover:bg-red-500 hover:text-white'
+          }`}
         >
-          닫기
+          {isSubmitting ? '종료 중...' : '닫기'}
         </button>
       </div>
     </div>

@@ -9,12 +9,14 @@ interface MovingAnswerOptionsProps {
   candidates: QuizCandidate[];
   onAnswerClick?: (id: string) => void;
   wrongAnswerId?: string | null;
+  isCorrect?: boolean;
 }
 
 export const MovingAnswerOptions: React.FC<MovingAnswerOptionsProps> = ({
   candidates,
   onAnswerClick,
   wrongAnswerId,
+  isCorrect,
 }) => {
   const [answers, setAnswers] = useState<AnswerOption[]>([]);
   const [avoidanceEnabled, setAvoidanceEnabled] = useState(false);

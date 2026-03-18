@@ -14,6 +14,7 @@ interface GameBoardContainerProps {
   onRestart?: () => void;
   wrongAnswerId?: string | null;
   isCorrect?: boolean;
+  isSubmitting?: boolean;
 }
 
 export const GameBoardContainer: React.FC<GameBoardContainerProps> = ({
@@ -25,6 +26,7 @@ export const GameBoardContainer: React.FC<GameBoardContainerProps> = ({
   onRestart,
   wrongAnswerId,
   isCorrect,
+  isSubmitting,
 }) => {
   const { aiLoading, aiHint, error, aiLevel, setAiLevel, getAiHint } = useAiHint(selectedImageData?.url);
 
@@ -47,6 +49,8 @@ export const GameBoardContainer: React.FC<GameBoardContainerProps> = ({
             }
           }}
           onClose={onClose}
+          isCorrect={isCorrect}
+          isSubmitting={isSubmitting}
         />
 
         <GameBoardContentView

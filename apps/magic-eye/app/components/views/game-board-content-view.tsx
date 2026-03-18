@@ -173,13 +173,13 @@ export const GameBoardContentView: React.FC<GameBoardContentViewProps> = ({
 
       {/* 정답 축하 오버레이 */}
       {isCorrect && (
-        <div className="absolute inset-0 z-50 flex flex-col items-center justify-center bg-green-500/90 backdrop-blur-sm animate-in zoom-in duration-300 pointer-events-none">
+        <div className="absolute inset-0 z-50 flex flex-col items-center justify-center bg-green-500/90 backdrop-blur-sm animate-in zoom-in duration-300">
           <div className="text-9xl mb-8">🎉</div>
           <h2 className="text-6xl font-black text-white tracking-tighter text-center px-4">정답입니다!</h2>
         </div>
       )}
 
-      <MovingAnswerOptions candidates={candidates} onAnswerClick={onAnswerClick} wrongAnswerId={wrongAnswerId} />
+      <MovingAnswerOptions candidates={candidates} onAnswerClick={onAnswerClick} wrongAnswerId={wrongAnswerId} isCorrect={isCorrect} />
 
       <div className="relative w-full h-full min-h-[500px] flex items-center justify-center p-4 pointer-events-none select-none">
         <img

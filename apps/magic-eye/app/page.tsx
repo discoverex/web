@@ -29,6 +29,7 @@ export default function MagicEyeGame() {
 
   const [gameState, setGameState] = useState<GameState>('LOBBY');
   const [countdown, setCountdown] = useState(3);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // 게임 시작 및 퀴즈 불러오기 공통 로직
   const loadNextQuiz = async () => {
@@ -46,6 +47,9 @@ export default function MagicEyeGame() {
   };
 
   const returnToLobby = async () => {
+    if (isSubmitting) return;
+    setIsSubmitting(true);
+    
     if (game_id && score > 0) {
       try {
         await submitScore({ game_id, game_type, score });
@@ -56,6 +60,7 @@ export default function MagicEyeGame() {
     resetGame();
     setGameState('LOBBY');
     closeGame();
+    setIsSubmitting(false);
   };
 
   // 카운트다운 로직
@@ -127,6 +132,7 @@ export default function MagicEyeGame() {
               onRestart={loadNextQuiz}
               wrongAnswerId={wrongAnswerId}
               isCorrect={gameState === 'CORRECT'}
+              isSubmitting={isSubmitting}
             />
           </div>
         )}
