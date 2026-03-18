@@ -57,19 +57,27 @@ export const GameBoardContentView: React.FC<GameBoardContentViewProps> = ({
 }) => {
   const [showHint, setShowHint] = useState(false);
   const [isExiting, setIsExiting] = useState(false);
-  const [currentMessage, setCurrentMessage] = useState('');
-  const [duration, setDuration] = useState(5000); // 표시 시간 기본값 5초
+  const [currentMessage, setCurrentMessage] = useState("");
+  const [duration, setDuration] = useState(5000);
+
+  // 이벤트 중복 방지 및 타이머 관리를 위한 ref
+  const lastEventRef = useRef<string>("");
+  const exitTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   // 공룡 자동 퇴장 타이머 통합 관리
   useEffect(() => {
     if (showHint && !isExiting) {
-      const exitTimer = setTimeout(() => {
+      if (exitTimerRef.current) clearTimeout(exitTimerRef.current);
+      
+      exitTimerRef.current = setTimeout(() => {
         setIsExiting(true);
       }, duration);
 
-      return () => clearTimeout(exitTimer);
+      return () => {
+        if (exitTimerRef.current) clearTimeout(exitTimerRef.current);
+      };
     }
-  }, [showHint, isExiting, duration, currentMessage]); // 메시지나 지속시간이 바뀌면 타이머 리셋
+  }, [showHint, isExiting, duration, currentMessage]);
 
   // 퇴장 애니메이션 종료 후 제거
   useEffect(() => {
@@ -77,7 +85,7 @@ export const GameBoardContentView: React.FC<GameBoardContentViewProps> = ({
       const removeTimer = setTimeout(() => {
         setShowHint(false);
         setIsExiting(false);
-      }, 600); // 애니메이션 시간(0.6s)에 맞춰 제거
+      }, 600);
 
       return () => clearTimeout(removeTimer);
     }
@@ -86,61 +94,70 @@ export const GameBoardContentView: React.FC<GameBoardContentViewProps> = ({
   // 새로운 힌트가 들어오면 표시
   useEffect(() => {
     if (aiHint && !isCorrect) {
+      const eventKey = `HINT_${aiHint.label}`;
+      if (lastEventRef.current === eventKey) return;
+      
       const randomTemplate = HINT_MESSAGES[Math.floor(Math.random() * HINT_MESSAGES.length)];
       setCurrentMessage(randomTemplate(aiHint.label));
-      setDuration(5000); // 힌트는 5초간 표시
+      setDuration(5000);
       setShowHint(true);
       setIsExiting(false);
+      lastEventRef.current = eventKey;
     }
-  }, [aiHint, aiLevel, isCorrect]);
+  }, [aiHint, isCorrect]);
 
-  // 정답을 맞혔을 때 공룡이 틀렸었다면 놀라는 반응
+  // 정답을 맞혔을 때 반응
   useEffect(() => {
     if (isCorrect && aiHint && correctAnswerId !== null) {
-      const correctAnswer = candidates.find((c) => c.id === correctAnswerId);
+      const eventKey = `CORRECT_${correctAnswerId}_${aiHint.label}`;
+      if (lastEventRef.current === eventKey) return;
+
+      const correctAnswer = candidates.find(c => c.id === correctAnswerId);
       if (correctAnswer && aiHint.label !== correctAnswer.display_name) {
         const randomSurprised = SURPRISED_MESSAGES[Math.floor(Math.random() * SURPRISED_MESSAGES.length)];
         setCurrentMessage(randomSurprised(aiHint.label, correctAnswer.display_name));
-        setDuration(4000); // 놀라는 건 좀 더 길게(4초)
+        setDuration(4000);
         setShowHint(true);
         setIsExiting(false);
       }
+      lastEventRef.current = eventKey;
     }
   }, [isCorrect, aiHint, correctAnswerId, candidates]);
 
-  // 유저가 오답을 클릭했을 때의 반응 (떠난 후 재등장 포함)
+  // 유저가 오답을 클릭했을 때의 반응
   useEffect(() => {
     if (wrongAnswerId && aiHint && !isCorrect) {
-      const clickedCandidate = candidates.find((c) => c.id.toString() === wrongAnswerId);
+      const eventKey = `WRONG_${wrongAnswerId}_${aiHint.label}`;
+      if (lastEventRef.current === eventKey) return;
+
+      const clickedCandidate = candidates.find(c => c.id.toString() === wrongAnswerId);
       if (!clickedCandidate) return;
 
       const isDinoAnswer = clickedCandidate.display_name === aiHint.label;
 
       if (!showHint || isExiting) {
-        // 이미 사라졌거나 사라지는 중일 때 다시 소환
         if (isDinoAnswer) {
           const randomFail = FAIL_MESSAGES[Math.floor(Math.random() * FAIL_MESSAGES.length)];
           setCurrentMessage(randomFail());
-          setDuration(2000); // 사과는 짧게(2초)
+          setDuration(2000);
         } else {
           const randomNag = NAG_MESSAGES[Math.floor(Math.random() * NAG_MESSAGES.length)];
           setCurrentMessage(randomNag(aiHint.label));
-          setDuration(3000); // 훈수는 적당히(3초)
+          setDuration(3000);
         }
         setShowHint(true);
         setIsExiting(false);
       } else if (isDinoAnswer) {
-        // 떠나지 않은 상태에서 AI 오답을 클릭한 경우 메시지만 교체하고 빨리 퇴장
         const randomFail = FAIL_MESSAGES[Math.floor(Math.random() * FAIL_MESSAGES.length)];
         setCurrentMessage(randomFail());
-        setDuration(1500); // 즉각 반응 후 1.5초 뒤 퇴장
+        setDuration(1500);
       }
+      lastEventRef.current = eventKey;
     }
   }, [wrongAnswerId, aiHint, candidates, showHint, isExiting, isCorrect]);
 
   return (
     <div className="relative flex-grow border-8 border-zinc-100 dark:border-zinc-800 rounded-3xl overflow-hidden cursor-pointer group flex justify-center items-center bg-zinc-200 dark:bg-zinc-950 shadow-inner min-h-[500px]">
-      {/* z-index를 60으로 설정하여 성공 오버레이(z-50)보다 위에 표시 */}
       {aiHint && showHint && (
         <div
           className={`absolute top-10 right-10 z-[60] flex items-end gap-3 ${isExiting ? 'animate-exit-right' : 'animate-hint'}`}
@@ -154,7 +171,7 @@ export const GameBoardContentView: React.FC<GameBoardContentViewProps> = ({
         </div>
       )}
 
-      {/* 정답 축하 오버레이 - 공룡 말풍선보다 아래(z-50)에 위치 */}
+      {/* 정답 축하 오버레이 */}
       {isCorrect && (
         <div className="absolute inset-0 z-50 flex flex-col items-center justify-center bg-green-500/90 backdrop-blur-sm animate-in zoom-in duration-300 pointer-events-none">
           <div className="text-9xl mb-8">🎉</div>
@@ -165,7 +182,6 @@ export const GameBoardContentView: React.FC<GameBoardContentViewProps> = ({
       <MovingAnswerOptions candidates={candidates} onAnswerClick={onAnswerClick} wrongAnswerId={wrongAnswerId} />
 
       <div className="relative w-full h-full min-h-[500px] flex items-center justify-center p-4 pointer-events-none select-none">
-        {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src={imageUrl}
           alt="Magic Eye Problem"
