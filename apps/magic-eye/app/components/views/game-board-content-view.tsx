@@ -158,7 +158,6 @@ export const GameBoardContentView: React.FC<GameBoardContentViewProps> = ({
 
   return (
     <div className="relative flex-grow border-8 border-zinc-100 dark:border-zinc-800 rounded-3xl overflow-hidden cursor-pointer group flex justify-center items-center bg-zinc-200 dark:bg-zinc-950 shadow-inner min-h-[500px]">
-      {/* z-index를 60으로 설정하여 성공 오버레이(z-50)보다 위에 표시 */}
       {aiHint && showHint && (
         <div className={`absolute top-10 right-10 z-[60] flex items-end gap-3 ${isExiting ? "animate-exit-right" : "animate-hint"}`}>
           <div className="bg-white dark:bg-zinc-800 p-4 rounded-2xl shadow-2xl border-2 border-purple-500 max-w-xs relative">
@@ -174,7 +173,7 @@ export const GameBoardContentView: React.FC<GameBoardContentViewProps> = ({
         </div>
       )}
 
-      {/* 정답 축하 오버레이 - 공룡 말풍선보다 아래(z-50)에 위치 */}
+      {/* 정답 축하 오버레이 */}
       {isCorrect && (
         <div className="absolute inset-0 z-50 flex flex-col items-center justify-center bg-green-500/90 backdrop-blur-sm animate-in zoom-in duration-300 pointer-events-none">
           <div className="text-9xl mb-8">🎉</div>
@@ -189,7 +188,6 @@ export const GameBoardContentView: React.FC<GameBoardContentViewProps> = ({
       />
 
       <div className="relative w-full h-full min-h-[500px] flex items-center justify-center p-4 pointer-events-none select-none">
-        {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src={imageUrl}
           alt="Magic Eye Problem"

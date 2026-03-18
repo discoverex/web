@@ -21,8 +21,6 @@ export async function submitScore(data: ScoreData) {
       score: data.score
     });
 
-    // apiClient에 이미 baseURL이 설정되어 있다면 /scores 만 전달 (슬래시 제거)
-    // 백엔드 엔드포인트가 /scores 인지 /scores/ 인지 확인이 필요함
     const response = await apiClient.post('/scores/', data)
     
     console.log('[ScoreService] Success:', response.data);
