@@ -1,9 +1,9 @@
 import { apiClient, auth } from '@repo/ui/auth'
 
 export interface ScoreData {
-  game_id: string
-  game_type: string
-  score: number
+  game_id: string;
+  game_type: string;
+  score: number;
 }
 
 export async function submitScore(data: ScoreData) {

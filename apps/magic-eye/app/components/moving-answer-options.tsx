@@ -1,9 +1,9 @@
-"use client";
+'use client';
 
-import React, { useState, useEffect, useRef } from "react";
-import Image from "next/image";
-import { QuizCandidate } from "@/app/types/quiz";
-import { AnswerOption } from "@/app/types/answer-option";
+import React, { useState, useEffect, useRef } from 'react';
+import Image from 'next/image';
+import { QuizCandidate } from '@/app/types/quiz';
+import { AnswerOption } from '@/app/types/answer-option';
 
 interface MovingAnswerOptionsProps {
   candidates: QuizCandidate[];
@@ -33,7 +33,7 @@ export const MovingAnswerOptions: React.FC<MovingAnswerOptionsProps> = ({
       id: candidate.id.toString(),
       label: candidate.display_name,
       imageUrl: candidate.answer_url,
-      x: Math.random() * 60 + 20, 
+      x: Math.random() * 60 + 20,
       y: Math.random() * 60 + 20,
       duration: 10 + Math.random() * 10,
       delay: -Math.random() * 20,
@@ -66,8 +66,8 @@ export const MovingAnswerOptions: React.FC<MovingAnswerOptionsProps> = ({
         y: e.clientY - rect.top,
       };
     };
-    window.addEventListener("mousemove", handleMouseMove, { passive: true });
-    return () => window.removeEventListener("mousemove", handleMouseMove);
+    window.addEventListener('mousemove', handleMouseMove, { passive: true });
+    return () => window.removeEventListener('mousemove', handleMouseMove);
   }, []);
 
   // Advanced Physics Engine (Evasion + Collision + Boundaries)
@@ -122,7 +122,7 @@ export const MovingAnswerOptions: React.FC<MovingAnswerOptionsProps> = ({
             const oDx = curPxX - oPxX;
             const oDy = curPxY - oPxY;
             const oDist = Math.sqrt(oDx * oDx + oDy * oDy);
-            const oThreshold = 130; 
+            const oThreshold = 130;
 
             if (oDist < oThreshold) {
               const oPower = Math.pow((oThreshold - oDist) / oThreshold, 1.2);
@@ -133,7 +133,7 @@ export const MovingAnswerOptions: React.FC<MovingAnswerOptionsProps> = ({
           });
 
           // 3. 벽면 반발
-          const margin = 12; 
+          const margin = 12;
           if (ans.x < margin) forceX += (margin - ans.x) * 0.8;
           if (ans.x > 100 - margin) forceX -= (ans.x - (100 - margin)) * 0.8;
           if (ans.y < margin) forceY += (margin - ans.y) * 0.8;
@@ -166,21 +166,21 @@ export const MovingAnswerOptions: React.FC<MovingAnswerOptionsProps> = ({
     <div ref={containerRef} className="absolute inset-0 pointer-events-none overflow-hidden select-none">
       {answers.map((ans) => {
         const isWrong = ans.id === wrongAnswerId;
-        
+
         return (
           <button
             key={ans.id}
             className={`absolute z-20 w-24 h-24 bg-white dark:bg-zinc-900 rounded-2xl shadow-2xl border-4 overflow-hidden pointer-events-auto group/ans 
-              ${isWrong ? "border-red-500 animate-shake scale-110 z-30" : "border-amber-500/50 hover:scale-110 hover:border-amber-500"}
-              ${!wrongAnswerId && !isWrong ? "animate-float" : ""}
+              ${isWrong ? 'border-red-500 animate-shake scale-110 z-30' : 'border-amber-500/50 hover:scale-110 hover:border-amber-500'}
+              ${!wrongAnswerId && !isWrong ? 'animate-float' : ''}
             `}
             style={{
               left: `${ans.x}%`,
               top: `${ans.y}%`,
               // @ts-ignore
-              "--float-duration": `${ans.duration}s`,
-              "--float-delay": `${ans.delay}s`,
-              transition: "none",
+              '--float-duration': `${ans.duration}s`,
+              '--float-delay': `${ans.delay}s`,
+              transition: 'none',
             }}
             onClick={(e) => {
               e.stopPropagation();
@@ -196,12 +196,11 @@ export const MovingAnswerOptions: React.FC<MovingAnswerOptionsProps> = ({
                 unoptimized
                 priority
                 className="object-cover w-full h-full"
+                crossOrigin="anonymous"
               />
             )}
             <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover/ans:opacity-100 transition-opacity z-10">
-              <span className="text-white text-[10px] font-bold px-1 text-center">
-                {ans.label}
-              </span>
+              <span className="text-white text-[10px] font-bold px-1 text-center">{ans.label}</span>
             </div>
           </button>
         );

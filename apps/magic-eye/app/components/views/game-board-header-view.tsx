@@ -1,4 +1,4 @@
-import React from "react";
+import React from 'react';
 
 interface GameBoardHeaderViewProps {
   fileName: string;
@@ -11,7 +11,6 @@ interface GameBoardHeaderViewProps {
 }
 
 export const GameBoardHeaderView: React.FC<GameBoardHeaderViewProps> = ({
-  fileName,
   error,
   aiLevel,
   aiLoading,
@@ -29,9 +28,7 @@ export const GameBoardHeaderView: React.FC<GameBoardHeaderViewProps> = ({
 
       <div className="flex items-center gap-4">
         <div className="flex items-center gap-3 bg-white dark:bg-zinc-900 px-4 py-2 rounded-2xl border border-zinc-200 dark:border-zinc-800 shadow-sm">
-          <span className="text-[10px] font-bold opacity-50 uppercase tracking-widest">
-            레벨
-          </span>
+          <span className="text-[10px] font-bold opacity-50 uppercase tracking-widest">레벨</span>
           <select
             value={aiLevel}
             onChange={(e) => onAiLevelChange(Number(e.target.value))}
@@ -50,11 +47,11 @@ export const GameBoardHeaderView: React.FC<GameBoardHeaderViewProps> = ({
           disabled={aiLoading}
           className={`px-6 py-3 rounded-2xl text-xs font-black transition-all shadow-lg ${
             aiLoading
-              ? "bg-zinc-200 text-zinc-400 cursor-not-allowed"
-              : "bg-gradient-to-r from-purple-600 to-indigo-600 text-white hover:scale-105 active:scale-95 shadow-purple-500/20"
+              ? 'bg-zinc-200 text-zinc-400 cursor-not-allowed'
+              : 'bg-gradient-to-r from-purple-600 to-indigo-600 text-white hover:scale-105 active:scale-95 shadow-purple-500/20'
           }`}
         >
-          {aiLoading ? "🤖 AI 분석 중..." : "🤖 AI 훈수 듣기"}
+          {aiLoading ? '🤖 AI 분석 중...' : '🤖 AI 훈수 듣기'}
         </button>
         <button
           onClick={onClose}

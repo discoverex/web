@@ -1,8 +1,8 @@
-import { useState, useEffect, useCallback } from "react";
-import { QuizCandidate } from "@/app/types/quiz";
-import { ImageData } from "@/app/types/image-data";
-import { quizService } from "../services/quiz-service";
-import { useGameStore } from "../../store/use-game-store";
+import { useCallback, useState } from 'react';
+import { QuizCandidate } from '@/app/types/quiz';
+import { ImageData } from '@/app/types/image-data';
+import { quizService } from '../services/quiz-service';
+import { useGameStore } from '@/store/use-game-store';
 
 export function useQuiz() {
   const [candidateCount, setCandidateCount] = useState<number>(5);
@@ -27,7 +27,7 @@ export function useQuiz() {
       return true;
     } catch (err) {
       console.error(err);
-      setError(err instanceof Error ? err.message : "알 수 없는 오류가 발생했습니다.");
+      setError(err instanceof Error ? err.message : '알 수 없는 오류가 발생했습니다.');
       return false;
     } finally {
       setLoading(false);

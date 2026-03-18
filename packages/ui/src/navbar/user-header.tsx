@@ -30,6 +30,7 @@ export default function UserHeader(): React.JSX.Element {
                   alt="profile"
                   width={45}
                   height={45}
+                  crossOrigin="anonymous"
                 />
               ) : (
                 <div className="bg-gradient-to-br from-amber-400 to-orange-500 text-white w-full h-full flex items-center justify-center font-bold text-lg">

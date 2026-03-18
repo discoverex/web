@@ -1,6 +1,6 @@
-import React, { useState, useEffect, useRef } from "react";
-import { AiHint, QuizCandidate } from "@/app/types";
-import { MovingAnswerOptions } from "../moving-answer-options";
+import React, { useEffect, useState } from 'react';
+import { AiHint, QuizCandidate } from '@/app/types';
+import { MovingAnswerOptions } from '../moving-answer-options';
 
 interface GameBoardContentViewProps {
   imageUrl: string;
@@ -22,11 +22,11 @@ const HINT_MESSAGES = [
 ];
 
 const FAIL_MESSAGES = [
-  () => "어라... 이게 아닌가? 내 눈이 침침한가 봐!",
-  () => "미안! 방금 건 연습이었어. 진짜야!",
-  () => "으악! 누가 내 안경 좀 가져다줘!",
-  () => "허걱, 이게 틀리다니... 난 이만 가볼게!",
-  () => "앗, 저기 옆집 공룡이 불러서 가봐야겠어. 안녕!",
+  () => '어라... 이게 아닌가? 내 눈이 침침한가 봐!',
+  () => '미안! 방금 건 연습이었어. 진짜야!',
+  () => '으악! 누가 내 안경 좀 가져다줘!',
+  () => '허걱, 이게 틀리다니... 난 이만 가볼게!',
+  () => '앗, 저기 옆집 공룡이 불러서 가봐야겠어. 안녕!',
 ];
 
 const NAG_MESSAGES = [
@@ -159,14 +159,12 @@ export const GameBoardContentView: React.FC<GameBoardContentViewProps> = ({
   return (
     <div className="relative flex-grow border-8 border-zinc-100 dark:border-zinc-800 rounded-3xl overflow-hidden cursor-pointer group flex justify-center items-center bg-zinc-200 dark:bg-zinc-950 shadow-inner min-h-[500px]">
       {aiHint && showHint && (
-        <div className={`absolute top-10 right-10 z-[60] flex items-end gap-3 ${isExiting ? "animate-exit-right" : "animate-hint"}`}>
+        <div
+          className={`absolute top-10 right-10 z-[60] flex items-end gap-3 ${isExiting ? 'animate-exit-right' : 'animate-hint'}`}
+        >
           <div className="bg-white dark:bg-zinc-800 p-4 rounded-2xl shadow-2xl border-2 border-purple-500 max-w-xs relative">
-            <p className="text-sm font-bold text-purple-600 dark:text-purple-400">
-              {`"${currentMessage}"`}
-            </p>
-            <p className="text-[10px] mt-2 opacity-50 font-mono text-right">
-              모델: ai_lv{aiLevel}.onnx
-            </p>
+            <p className="text-sm font-bold text-purple-600 dark:text-purple-400">{`"${currentMessage}"`}</p>
+            <p className="text-[10px] mt-2 opacity-50 font-mono text-right">모델: ai_lv{aiLevel}.onnx</p>
             <div className="absolute -bottom-2 right-4 w-4 h-4 bg-white dark:bg-zinc-800 border-r-2 border-b-2 border-purple-500 rotate-45" />
           </div>
           <div className="text-4xl filter drop-shadow-lg">🦖</div>
@@ -181,11 +179,7 @@ export const GameBoardContentView: React.FC<GameBoardContentViewProps> = ({
         </div>
       )}
 
-      <MovingAnswerOptions
-        candidates={candidates}
-        onAnswerClick={onAnswerClick}
-        wrongAnswerId={wrongAnswerId}
-      />
+      <MovingAnswerOptions candidates={candidates} onAnswerClick={onAnswerClick} wrongAnswerId={wrongAnswerId} />
 
       <div className="relative w-full h-full min-h-[500px] flex items-center justify-center p-4 pointer-events-none select-none">
         <img
@@ -193,11 +187,11 @@ export const GameBoardContentView: React.FC<GameBoardContentViewProps> = ({
           alt="Magic Eye Problem"
           draggable={false}
           className="max-w-full max-h-full object-contain z-10 shadow-lg rounded-lg"
-          style={{ 
+          style={{
             imageRendering: 'auto',
             width: 'auto',
             height: 'auto',
-            display: 'block'
+            display: 'block',
           }}
         />
       </div>

@@ -3,6 +3,8 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
+    "predev": "node copy-wasm.js",
+    "prebuild": "node copy-wasm.js",
     "dev": "next dev --port 3002",
     "build": "next build",
     "start": "next start",
@@ -14,10 +16,9 @@
     "daisyui": "^5.5.19",
     "next": "16.1.6",
     "next-themes": "^0.4.6",
-    "onnxruntime-node": "^1.24.3",
+    "onnxruntime-web": "^1.24.3",
     "react": "19.2.3",
     "react-dom": "19.2.3",
-    "sharp": "^0.34.5",
     "zustand": "^5.0.12"
   },
   "devDependencies": {
