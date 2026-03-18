@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { AiHint, QuizCandidate } from '@/app/types';
 import { MovingAnswerOptions } from '../moving-answer-options';
 
