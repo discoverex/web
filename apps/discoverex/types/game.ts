@@ -21,13 +21,6 @@ export interface PlayableLayer {
   source_region_id: string | null;
 }
 
-export interface ManifestLayer {
-  layer_id: string;
-  type: string;
-  path: string; // 예: "layers/000-layer-base-..."
-  source_region_id: string | null;
-}
-
 export interface DeliveryBundle {
   playable: {
     image_ref: string;
@@ -41,31 +34,12 @@ export interface DeliveryBundle {
   };
 }
 
-export interface Manifest {
-  scene_id: string;
-  version_id: string;
-  layers: ManifestLayer[]; // 추가된 부분
-  delivery_bundle: DeliveryBundle;
-}
-
-export interface LayerItem {
-  name: string;
-  url: string;
-}
-
 export interface LayerListResponse {
   status: string;
   data: {
     theme: string;
-    layers: LayerItem[];
-    manifest: Manifest;
+    layers: Array<{ name: string; url: string }>;
+    manifest: any;
     lottie: string;
-  };
-}
-
-export interface ThemeListResponse {
-  status: string;
-  data: {
-    themes: string[];
   };
 }
