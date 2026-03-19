@@ -10,10 +10,9 @@
 - [ ] **상태 관리 설계**: 현재 선택된 테마, 로딩 상태, 게임 진행 상태(Playing, Success, Failed)를 관리할 전역/지역 상태를 정의합니다.
 
 ### Phase 2: 레이어 기반 렌더링 엔진 (Core Rendering)
-- [ ] **Layered Canvas/Container**: `z-index`에 맞춰 여러 장의 PNG 이미지를 겹쳐서 보여주는 컴포넌트를 구현합니다.
+- [ ] **Layered Canvas/Container**: 여러 장의 PNG 이미지를 겹쳐서 보여주는 컴포넌트를 구현합니다.
   - Base 배경 이미지 (Layer 0)
   - 개별 오브젝트 이미지 (Inpaint Layers)
-  - 최종 효과 레이어 (FX Layer)
 - [ ] **Responsive Scaling**: 원본 이미지 크기(예: 768x768)와 브라우저상의 실제 렌더링 크기 간의 비율을 계산하여 좌표를 매핑합니다.
 
 ### Phase 3: 정답 판정 및 상호작용 (Game Logic)
