@@ -2,20 +2,19 @@
 
 import React, { useRef, useState, useEffect } from 'react';
 import Image from 'next/image';
-import Lottie, { LottieRefCurrentProps } from 'lottie-react';
+import { DotLottiePlayer, PlayerEvents } from '@dotlottie/react-player';
 import { useAuth } from '@repo/ui/auth';
 import rexAnimation from '../public/rex-animation.json';
 import { GameContainer } from '../components/game/game-container';
-import { GameMetadata, LayerListResponse, ThemeListResponse } from '../types/game';
+import { LayerListResponse, ThemeListResponse } from '../types/game';
 import { API_BASE_URL } from '../consts/API_BASE_URL';
 
 export default function Home() {
   const { user, loading: authLoading, logout } = useAuth();
-  const lottieRef = useRef<LottieRefCurrentProps>(null);
+  const playerRef = useRef<any>(null); // DotLottiePlayer ref
   
   const [themes, setThemes] = useState<string[]>([]);
   const [selectedTheme, setSelectedTheme] = useState<string | null>(null);
-  const [metadata, setMetadata] = useState<GameMetadata | null>(null);
   const [layersResponse, setLayersResponse] = useState<LayerListResponse | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -39,14 +38,13 @@ export default function Home() {
   const handleThemeSelect = async (themeName: string) => {
     setIsLoading(true);
     setSelectedTheme(themeName);
+    
     try {
-      // 레이어 및 매니페스트 통합 조회
       const res = await fetch(`${API_BASE_URL}/discoverex/themes/${themeName}/layers`);
       const data: LayerListResponse = await res.json();
       
       if (data.status === 'success') {
         setLayersResponse(data);
-        // lottie 데이터가 있다면 업데이트 (필요 시)
       }
     } catch (err) {
       console.error('Failed to load theme data:', err);
@@ -56,9 +54,9 @@ export default function Home() {
   };
 
   const handleCorrect = () => {
-    if (lottieRef.current) {
-      lottieRef.current.stop();
-      lottieRef.current.play();
+    if (playerRef.current) {
+      playerRef.current.seek(0);
+      playerRef.current.play();
     }
   };
 
@@ -69,12 +67,12 @@ export default function Home() {
       <header className="w-full max-w-4xl flex justify-between items-center mb-8">
         <div className="flex items-center gap-4">
           <div className="w-12 h-12">
-            <Lottie 
-              lottieRef={lottieRef} 
-              animationData={layersResponse?.data?.lottie ? undefined : rexAnimation}
-              path={layersResponse?.data?.lottie} // URL이 있으면 path 사용
-              loop={false} 
-              autoplay={false} 
+            <DotLottiePlayer
+              ref={playerRef}
+              src={layersResponse?.data?.lottie || rexAnimation}
+              autoplay={false}
+              loop={false}
+              style={{ width: '100%', height: '100%' }}
             />
           </div>
           <h1 className="text-2xl font-black tracking-tighter uppercase italic">Discoverex</h1>

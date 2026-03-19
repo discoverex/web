@@ -9,6 +9,7 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "@dotlottie/react-player": "^1.6.19",
     "@repo/ui": "workspace:*",
     "daisyui": "^5.5.19",
     "lottie-react": "^2.4.1",
