@@ -2,25 +2,24 @@
 
 import React, { useRef } from 'react';
 import Image from 'next/image';
-import { GameMetadata, LayerItem } from '../../types/game';
+import { DeliveryBundle, PlayableLayer } from '../../types/game';
 
 interface GameBoardProps {
-  metadata: GameMetadata;
+  bundle: DeliveryBundle;
   foundIds: string[];
   onCorrectAnswer: (id: string) => void;
-  // URL 매핑 함수: metadata의 image_ref 또는 layer_id를 실제 서명된 URL로 변환
-  getImageUrl: (item: LayerItem) => string;
+  getImageUrl: (item: PlayableLayer) => string;
 }
 
 export const GameBoard: React.FC<GameBoardProps> = ({ 
-  metadata, 
+  bundle, 
   foundIds, 
   onCorrectAnswer,
   getImageUrl
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
-  const originalWidth = metadata.background.width || 768;
-  const originalHeight = metadata.background.height || 768;
+  const originalWidth = bundle.playable.width || 768;
+  const originalHeight = bundle.playable.height || 768;
 
   const handleBoardClick = (e: React.MouseEvent<HTMLDivElement>) => {
     if (!containerRef.current) return;
@@ -29,20 +28,19 @@ export const GameBoard: React.FC<GameBoardProps> = ({
     const clickX = e.clientX - rect.left;
     const clickY = e.clientY - rect.top;
 
-    // 현재 실제 렌더링된 크기 기반으로 클릭 좌표를 원본(768x768) 비율로 변환
     const scaleX = originalWidth / rect.width;
     const scaleY = originalHeight / rect.height;
     
     const x = clickX * scaleX;
     const y = clickY * scaleY;
 
-    // 정답 목록 중 클릭된 bbox가 있는지 확인
-    const answerRegions = metadata.regions.filter(r => metadata.answer.answer_region_ids.includes(r.region_id));
+    // answer_key의 regions 중 클릭된 bbox가 있는지 확인
+    const answerRegions = bundle.answer_key.regions;
     
     for (const region of answerRegions) {
       if (foundIds.includes(region.region_id)) continue;
 
-      const { x: bx, y: by, w, h } = region.geometry.bbox;
+      const { x: bx, y: by, w, h } = region.bbox;
       if (x >= bx && x <= bx + w && y >= by && y <= by + h) {
         onCorrectAnswer(region.region_id);
         return;
@@ -56,8 +54,8 @@ export const GameBoard: React.FC<GameBoardProps> = ({
       className="relative w-full max-w-[768px] aspect-square bg-zinc-100 overflow-hidden rounded-xl shadow-xl cursor-crosshair border border-zinc-200"
       onClick={handleBoardClick}
     >
-      {/* 1. 레이어 렌더링 (z-index 순) */}
-      {metadata.layers.items
+      {/* 레이어 렌더링 */}
+      {bundle.playable.layers
         .sort((a, b) => a.z_index - b.z_index)
         .map((layer) => {
           const isBase = !layer.bbox;
@@ -87,8 +85,8 @@ export const GameBoard: React.FC<GameBoardProps> = ({
           );
         })}
 
-      {/* 2. 찾은 정답 강조 표시 */}
-      {metadata.regions
+      {/* 찾은 정답 강조 표시 */}
+      {bundle.answer_key.regions
         .filter(r => foundIds.includes(r.region_id))
         .map((region) => (
           <div
@@ -96,10 +94,10 @@ export const GameBoard: React.FC<GameBoardProps> = ({
             className="absolute border-4 border-green-500 rounded-full animate-in zoom-in-50 duration-300"
             style={{
               zIndex: 2000,
-              left: `${(region.geometry.bbox.x / originalWidth) * 100}%`,
-              top: `${(region.geometry.bbox.y / originalHeight) * 100}%`,
-              width: `${(region.geometry.bbox.w / originalWidth) * 100}%`,
-              height: `${(region.geometry.bbox.h / originalHeight) * 100}%`,
+              left: `${(region.bbox.x / originalWidth) * 100}%`,
+              top: `${(region.bbox.y / originalHeight) * 100}%`,
+              width: `${(region.bbox.w / originalWidth) * 100}%`,
+              height: `${(region.bbox.h / originalHeight) * 100}%`,
             }}
           />
         ))}

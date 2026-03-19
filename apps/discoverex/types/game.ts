@@ -5,26 +5,7 @@ export interface BBox {
   h: number;
 }
 
-export interface Region {
-  region_id: string;
-  geometry: {
-    type: string;
-    bbox: BBox;
-    mask_ref: string | null;
-    z_index: number;
-  };
-  role: 'answer' | 'candidate';
-  source: string;
-  attributes: {
-    object_image_ref: string;
-    object_mask_ref: string;
-    patch_image_ref: string;
-    composited_image_ref: string;
-    [key: string]: any;
-  };
-}
-
-export interface LayerItem {
+export interface PlayableLayer {
   layer_id: string;
   type: string;
   image_ref: string;
@@ -34,22 +15,49 @@ export interface LayerItem {
   source_region_id: string | null;
 }
 
-export interface GameMetadata {
-  meta: {
-    scene_id: string;
-    [key: string]: any;
-  };
-  background: {
-    asset_ref: string;
+export interface ManifestLayer {
+  layer_id: string;
+  type: string;
+  path: string; // 예: "layers/000-layer-base-..."
+  source_region_id: string | null;
+}
+
+export interface DeliveryBundle {
+  playable: {
+    image_ref: string;
     width: number;
     height: number;
+    layers: PlayableLayer[];
   };
-  regions: Region[];
-  layers: {
-    items: LayerItem[];
-  };
-  answer: {
+  answer_key: {
     answer_region_ids: string[];
+    regions: Array<{
+      region_id: string;
+      bbox: BBox;
+      role: string;
+    }>;
+  };
+}
+
+export interface Manifest {
+  scene_id: string;
+  version_id: string;
+  layers: ManifestLayer[]; // 추가된 부분
+  delivery_bundle: DeliveryBundle;
+}
+
+export interface LayerItem {
+  name: string;
+  url: string;
+}
+
+export interface LayerListResponse {
+  status: string;
+  data: {
+    theme: string;
+    layers: LayerItem[];
+    manifest: Manifest;
+    lottie: string;
   };
 }
 
@@ -57,13 +65,5 @@ export interface ThemeListResponse {
   status: string;
   data: {
     themes: string[];
-  };
-}
-
-export interface LayerListResponse {
-  status: string;
-  data: {
-    theme: string;
-    layers: Array<{ name: string; url: string }>;
   };
 }

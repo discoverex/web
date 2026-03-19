@@ -40,16 +40,14 @@ export default function Home() {
     setIsLoading(true);
     setSelectedTheme(themeName);
     try {
-      // 레이어 목록 조회
-      const layersRes = await fetch(`${API_BASE_URL}/discoverex/themes/${themeName}/layers`);
-      const layersData: LayerListResponse = await layersRes.json();
+      // 레이어 및 매니페스트 통합 조회
+      const res = await fetch(`${API_BASE_URL}/discoverex/themes/${themeName}/layers`);
+      const data: LayerListResponse = await res.json();
       
-      // 상세 메타데이터 조회
-      const metaRes = await fetch(`${API_BASE_URL}/discoverex/themes/${themeName}/metadata`);
-      const metaData: GameMetadata = await metaRes.json();
-
-      setLayersResponse(layersData);
-      setMetadata(metaData);
+      if (data.status === 'success') {
+        setLayersResponse(data);
+        // lottie 데이터가 있다면 업데이트 (필요 시)
+      }
     } catch (err) {
       console.error('Failed to load theme data:', err);
     } finally {
@@ -71,7 +69,13 @@ export default function Home() {
       <header className="w-full max-w-4xl flex justify-between items-center mb-8">
         <div className="flex items-center gap-4">
           <div className="w-12 h-12">
-            <Lottie lottieRef={lottieRef} animationData={rexAnimation} loop={false} autoplay={false} />
+            <Lottie 
+              lottieRef={lottieRef} 
+              animationData={layersResponse?.data?.lottie ? undefined : rexAnimation}
+              path={layersResponse?.data?.lottie} // URL이 있으면 path 사용
+              loop={false} 
+              autoplay={false} 
+            />
           </div>
           <h1 className="text-2xl font-black tracking-tighter uppercase italic">Discoverex</h1>
         </div>
@@ -108,7 +112,7 @@ export default function Home() {
         ) : (
           <div className="flex flex-col items-center gap-6">
             <button 
-              onClick={() => { setSelectedTheme(null); setMetadata(null); }}
+              onClick={() => { setSelectedTheme(null); setLayersResponse(null); }}
               className="self-start text-sm font-bold flex items-center gap-2 text-zinc-400 hover:text-black transition-colors"
             >
               ← Back to Themes
@@ -120,10 +124,9 @@ export default function Home() {
                 <p className="font-bold text-zinc-400">Loading Scene...</p>
               </div>
             ) : (
-              metadata && layersResponse && (
+              layersResponse && (
                 <GameContainer 
-                  metadata={metadata} 
-                  layersResponse={layersResponse} 
+                  gameData={layersResponse.data} 
                   onCorrect={handleCorrect}
                 />
               )
