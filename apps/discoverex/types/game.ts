@@ -5,6 +5,12 @@ export interface BBox {
   h: number;
 }
 
+export interface Region {
+  region_id: string;
+  bbox: BBox;
+  role: string;
+}
+
 export interface PlayableLayer {
   layer_id: string;
   type: string;
@@ -31,11 +37,7 @@ export interface DeliveryBundle {
   };
   answer_key: {
     answer_region_ids: string[];
-    regions: Array<{
-      region_id: string;
-      bbox: BBox;
-      role: string;
-    }>;
+    regions: Region[];
   };
 }
 

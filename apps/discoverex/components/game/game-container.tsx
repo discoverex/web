@@ -1,8 +1,10 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
-import { LayerListResponse, PlayableLayer } from '../../types/game';
+import React from 'react';
+import { LayerListResponse } from '../../types/game';
 import { GameBoard } from './game-board';
+import { useDiscoverGame } from '../../hooks/use-discover-game';
+import { getImageUrl, getThumbnailUrl } from '../../utils/image-mapping';
 
 interface GameContainerProps {
   gameData: LayerListResponse['data'];
@@ -15,67 +17,13 @@ export const GameContainer: React.FC<GameContainerProps> = ({
   onAllFound,
   onCorrect
 }) => {
-  const [foundIds, setFoundIds] = useState<string[]>([]);
-  const { manifest, layers } = gameData;
-  const bundle = manifest.delivery_bundle;
-
-  // 1. 레이어 URL 매핑 (더욱 유연한 매칭 알고리즘)
-  const getImageUrl = (layer: PlayableLayer): string => {
-    const targetId = layer.layer_id.toLowerCase();
-    const shortId = targetId.replace('layer-', '');
-
-    // A. 레이어 ID 기반 매칭 (가장 정확함)
-    // 예: "layer-fx-final" -> "004-layer-fx-final.png"
-    const matchedById = layers.find(l => {
-      const name = l.name.toLowerCase();
-      return name.includes(targetId) || name.includes(shortId);
-    });
-    if (matchedById) return matchedById.url;
-
-    // B. 매니페스트 경로 기반 매칭
-    const manifestLayer = manifest.layers?.find(ml => ml.layer_id === layer.layer_id);
-    if (manifestLayer) {
-      const fileName = manifestLayer.path.split('/').pop()?.toLowerCase() || '';
-      if (fileName) {
-        const matchedByPath = layers.find(l => l.name.toLowerCase().includes(fileName));
-        if (matchedByPath) return matchedByPath.url;
-      }
-    }
-
-    // C. 원본 image_ref 파일명 기반 매칭 (최후의 수단)
-    const refFileName = layer.image_ref.split('/').pop()?.toLowerCase() || '';
-    if (refFileName && !refFileName.includes('tmp')) {
-      const matchedByRef = layers.find(l => l.name.toLowerCase().includes(refFileName));
-      if (matchedByRef) return matchedByRef.url;
-    }
-
-    // 모든 매칭 실패 시 빈 문자열 반환 (로컬 경로 /tmp/... 절대 반환 안 함)
-    console.warn(`[Discoverex] Mapping failed for layer: ${layer.layer_id}`);
-    return '';
-  };
-
-  // 2. 썸네일 URL 매핑
-  const getThumbnailUrl = (regionId: string): string => {
-    const layer = bundle.playable.layers.find(l => l.source_region_id === regionId);
-    if (!layer) return '';
-    return getImageUrl(layer);
-  };
-
-  const handleCorrect = (id: string) => {
-    if (foundIds.includes(id)) return;
-    
-    const newFoundIds = [...foundIds, id];
-    setFoundIds(newFoundIds);
-    onCorrect?.(id);
-
-    if (newFoundIds.length === bundle.answer_key.answer_region_ids.length) {
-      onAllFound?.();
-    }
-  };
-
-  const answerRegions = useMemo(() => {
-    return bundle.answer_key.regions || [];
-  }, [bundle]);
+  const { 
+    foundIds, 
+    handleCorrect, 
+    answerRegions, 
+    progress, 
+    bundle 
+  } = useDiscoverGame({ gameData, onCorrect, onAllFound });
 
   return (
     <div className="flex flex-col items-center w-full animate-in fade-in slide-in-from-bottom-4 duration-500">
@@ -83,7 +31,7 @@ export const GameContainer: React.FC<GameContainerProps> = ({
         <div className="flex flex-col">
           <span className="text-sm font-bold text-zinc-400 uppercase tracking-widest">Progress</span>
           <div className="text-3xl font-black tabular-nums">
-            {foundIds.length} <span className="text-zinc-300">/</span> {bundle.answer_key.answer_region_ids.length}
+            {progress.found} <span className="text-zinc-300">/</span> {progress.total}
           </div>
         </div>
       </div>
@@ -92,7 +40,7 @@ export const GameContainer: React.FC<GameContainerProps> = ({
         bundle={bundle}
         foundIds={foundIds}
         onCorrectAnswer={handleCorrect}
-        getImageUrl={getImageUrl}
+        getImageUrl={(layer) => getImageUrl(layer, gameData.layers, gameData.manifest)}
       />
 
       <div className="w-full mt-8 bg-zinc-50 dark:bg-zinc-900/50 p-6 rounded-2xl border border-zinc-200 dark:border-zinc-800 shadow-inner">
@@ -102,7 +50,7 @@ export const GameContainer: React.FC<GameContainerProps> = ({
         <div className="flex flex-wrap gap-4 justify-center items-center">
           {answerRegions.map((region) => {
             const isFound = foundIds.includes(region.region_id);
-            const thumbUrl = getThumbnailUrl(region.region_id);
+            const thumbUrl = getThumbnailUrl(region.region_id, gameData);
 
             return (
               <div

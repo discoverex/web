@@ -34,7 +34,10 @@ export default function GlobalNavbar(): React.JSX.Element {
   };
 
   return (
-    <nav className="sticky top-0 z-50 w-full bg-white/90 dark:bg-slate-900/90 backdrop-blur-md border-b border-base-300 dark:border-slate-800 shadow-sm transition-all duration-300">
+    <nav
+      style={{zIndex: 2000}} 
+      className="sticky top-0 z-50 w-full bg-white/90 dark:bg-slate-900/90 backdrop-blur-md border-b border-base-300 dark:border-slate-800 shadow-sm transition-all duration-300"
+    >
       {/* 중앙 정렬 컨테이너: 여백 및 너비 제한 */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">

@@ -1,53 +1,36 @@
 'use client';
 
 import React, { useRef, useState, useEffect } from 'react';
-import Image from 'next/image';
 import { DotLottiePlayer, PlayerEvents } from '@dotlottie/react-player';
 import { useAuth } from '@repo/ui/auth';
-import rexAnimation from '../public/rex-animation.json';
 import { GameContainer } from '../components/game/game-container';
-import { LayerListResponse, ThemeListResponse } from '../types/game';
-import { API_BASE_URL } from '../consts/API_BASE_URL';
+import { LayerListResponse } from '../types/game';
+import { GameService } from '../services/game-service';
 
 export default function Home() {
   const { user, loading: authLoading, logout } = useAuth();
-  const playerRef = useRef<any>(null); // DotLottiePlayer ref
+  const playerRef = useRef<any>(null);
   
   const [themes, setThemes] = useState<string[]>([]);
   const [selectedTheme, setSelectedTheme] = useState<string | null>(null);
   const [layersResponse, setLayersResponse] = useState<LayerListResponse | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
-  // 1. 테마 목록 조회
+  // 1. 테마 목록 로드
   useEffect(() => {
-    const fetchThemes = async () => {
-      try {
-        const res = await fetch(`${API_BASE_URL}/discoverex/themes`);
-        const data: ThemeListResponse = await res.json();
-        if (data.status === 'success') {
-          setThemes(data.data.themes);
-        }
-      } catch (err) {
-        console.error('Failed to fetch themes:', err);
-      }
-    };
-    fetchThemes();
+    GameService.fetchThemes().then(setThemes).catch(console.error);
   }, []);
 
-  // 2. 테마 선택 시 데이터 로드
+  // 2. 테마 선택 및 데이터 로드
   const handleThemeSelect = async (themeName: string) => {
     setIsLoading(true);
     setSelectedTheme(themeName);
     
     try {
-      const res = await fetch(`${API_BASE_URL}/discoverex/themes/${themeName}/layers`);
-      const data: LayerListResponse = await res.json();
-      
-      if (data.status === 'success') {
-        setLayersResponse(data);
-      }
+      const data = await GameService.fetchThemeLayers(themeName);
+      setLayersResponse({ status: 'success', data });
     } catch (err) {
-      console.error('Failed to load theme data:', err);
+      console.error(err);
     } finally {
       setIsLoading(false);
     }
@@ -62,26 +45,32 @@ export default function Home() {
 
   if (authLoading) return <div className="flex h-screen items-center justify-center font-bold">Checking Auth...</div>;
 
+  const lottieSrc = layersResponse?.data?.lottie || '/rex-animation.json';
+
   return (
     <div className="flex min-h-screen flex-col items-center bg-zinc-50 font-sans dark:bg-black p-4 sm:p-8">
       <header className="w-full max-w-4xl flex justify-between items-center mb-8">
         <div className="flex items-center gap-4">
-          <div className="w-12 h-12">
+          <div className="w-20 h-20 sm:w-24 sm:h-24 bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-100 dark:border-zinc-800 shadow-sm overflow-hidden flex items-center justify-center">
             <DotLottiePlayer
+              key={lottieSrc}
               ref={playerRef}
-              src={layersResponse?.data?.lottie || rexAnimation}
+              src={lottieSrc}
               autoplay={false}
               loop={false}
               style={{ width: '100%', height: '100%' }}
             />
           </div>
-          <h1 className="text-2xl font-black tracking-tighter uppercase italic">Discoverex</h1>
+          <div className="flex flex-col">
+            <h1 className="text-2xl font-black tracking-tighter uppercase italic leading-none">Discoverex</h1>
+            <span className="text-[10px] font-bold text-zinc-400 tracking-[0.3em] uppercase mt-1">Investigation Unit</span>
+          </div>
         </div>
         
         {user && (
           <div className="flex items-center gap-4 bg-white dark:bg-zinc-900 px-4 py-2 rounded-full shadow-sm border border-zinc-100">
             <span className="text-sm font-bold truncate max-w-[120px]">{user.displayName || user.email}</span>
-            <button onClick={logout} className="text-xs text-red-500 font-bold hover:underline">LOGOUT</button>
+            <button onClick={logout} className="text-xs text-red-500 font-bold hover:underline uppercase tracking-tighter">Logout</button>
           </div>
         )}
       </header>

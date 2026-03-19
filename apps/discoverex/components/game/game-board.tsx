@@ -52,19 +52,21 @@ export const GameBoard: React.FC<GameBoardProps> = ({
       onClick={handleBoardClick}
     >
       {/* 레이어 렌더링 */}
-      {bundle.playable.layers
-        .sort((a, b) => a.z_index - b.z_index)
+      {[...bundle.playable.layers]
+        .sort((a, b) => (a.z_index || 0) - (b.z_index || 0))
         .map((layer) => {
           const url = getImageUrl(layer);
           
-          // 매핑 실패 시 렌더링 건너뜀 (중요: /tmp/ 경로 에러 방지)
-          if (!url) return null;
+          if (!url) {
+            console.warn(`[GameBoard] No URL for layer: ${layer.layer_id}`);
+            return null;
+          }
 
-          const isBase = !layer.bbox;
+          const isBase = !layer.bbox || layer.type === 'base';
           return (
             <div
               key={layer.layer_id}
-              className="absolute pointer-events-none"
+              className="absolute pointer-events-none select-none"
               style={{
                 zIndex: layer.z_index,
                 left: isBase ? 0 : `${(layer.bbox!.x / originalWidth) * 100}%`,
@@ -77,9 +79,10 @@ export const GameBoard: React.FC<GameBoardProps> = ({
                 src={url}
                 alt={layer.layer_id}
                 fill
-                priority={layer.type === 'base'}
+                priority={isBase}
                 className={isBase ? "object-cover" : "object-contain"}
                 crossOrigin="anonymous"
+                draggable={false}
               />
             </div>
           );
