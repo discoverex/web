@@ -19,29 +19,39 @@ export const GameContainer: React.FC<GameContainerProps> = ({
   const { manifest, layers } = gameData;
   const bundle = manifest.delivery_bundle;
 
-  // 1. 레이어 URL 매핑 (가장 강력한 매핑 로직)
+  // 1. 레이어 URL 매핑 (더욱 유연한 매칭 알고리즘)
   const getImageUrl = (layer: PlayableLayer): string => {
-    // A. layer_id를 통한 매니페스트 기반 매칭
-    const manifestLayer = manifest.layers?.find(ml => ml.layer_id === layer.layer_id);
-    if (manifestLayer) {
-      const fileName = manifestLayer.path.split('/').pop() || '';
-      const matched = layers.find(l => l.name.includes(fileName) || fileName.includes(l.name));
-      if (matched) return matched.url;
-    }
+    const targetId = layer.layer_id.toLowerCase();
+    const shortId = targetId.replace('layer-', '');
 
-    // B. 서명된 URL 목록의 name에 layer_id가 포함되어 있는지 확인 (예: "001-layer-inpaint-0.png"에 "inpaint-0" 포함)
-    const shortId = layer.layer_id.replace('layer-', '');
-    const matchedById = layers.find(l => l.name.includes(shortId) || l.name.includes(layer.layer_id));
+    // A. 레이어 ID 기반 매칭 (가장 정확함)
+    // 예: "layer-fx-final" -> "004-layer-fx-final.png"
+    const matchedById = layers.find(l => {
+      const name = l.name.toLowerCase();
+      return name.includes(targetId) || name.includes(shortId);
+    });
     if (matchedById) return matchedById.url;
 
-    // C. image_ref의 파일명 자체가 layers에 있는지 확인
-    const refFileName = layer.image_ref.split('/').pop() || '';
-    const matchedByRef = layers.find(l => l.name.includes(refFileName) || refFileName.includes(l.name));
-    if (matchedByRef) return matchedByRef.url;
+    // B. 매니페스트 경로 기반 매칭
+    const manifestLayer = manifest.layers?.find(ml => ml.layer_id === layer.layer_id);
+    if (manifestLayer) {
+      const fileName = manifestLayer.path.split('/').pop()?.toLowerCase() || '';
+      if (fileName) {
+        const matchedByPath = layers.find(l => l.name.toLowerCase().includes(fileName));
+        if (matchedByPath) return matchedByPath.url;
+      }
+    }
 
-    // 로컬 경로(/tmp/...)를 그대로 반환하면 Next.js가 오류를 내므로, 실패 시 빈 문자열 반환
-    console.warn(`Failed to map layer: ${layer.layer_id}`);
-    return ''; 
+    // C. 원본 image_ref 파일명 기반 매칭 (최후의 수단)
+    const refFileName = layer.image_ref.split('/').pop()?.toLowerCase() || '';
+    if (refFileName && !refFileName.includes('tmp')) {
+      const matchedByRef = layers.find(l => l.name.toLowerCase().includes(refFileName));
+      if (matchedByRef) return matchedByRef.url;
+    }
+
+    // 모든 매칭 실패 시 빈 문자열 반환 (로컬 경로 /tmp/... 절대 반환 안 함)
+    console.warn(`[Discoverex] Mapping failed for layer: ${layer.layer_id}`);
+    return '';
   };
 
   // 2. 썸네일 URL 매핑
@@ -108,7 +118,9 @@ export const GameContainer: React.FC<GameContainerProps> = ({
                       crossOrigin="anonymous" 
                     />
                   ) : (
-                    <div className="w-full h-full bg-zinc-100 animate-pulse rounded-lg" />
+                    <div className="w-full h-full bg-zinc-100 animate-pulse rounded-lg flex items-center justify-center text-[10px] text-zinc-300">
+                      ?
+                    </div>
                   )}
                 </div>
                 {isFound && (

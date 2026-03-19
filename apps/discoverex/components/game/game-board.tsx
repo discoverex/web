@@ -34,12 +34,9 @@ export const GameBoard: React.FC<GameBoardProps> = ({
     const x = clickX * scaleX;
     const y = clickY * scaleY;
 
-    // answer_key의 regions 중 클릭된 bbox가 있는지 확인
     const answerRegions = bundle.answer_key.regions;
-    
     for (const region of answerRegions) {
       if (foundIds.includes(region.region_id)) continue;
-
       const { x: bx, y: by, w, h } = region.bbox;
       if (x >= bx && x <= bx + w && y >= by && y <= by + h) {
         onCorrectAnswer(region.region_id);
@@ -58,9 +55,12 @@ export const GameBoard: React.FC<GameBoardProps> = ({
       {bundle.playable.layers
         .sort((a, b) => a.z_index - b.z_index)
         .map((layer) => {
-          const isBase = !layer.bbox;
           const url = getImageUrl(layer);
           
+          // 매핑 실패 시 렌더링 건너뜀 (중요: /tmp/ 경로 에러 방지)
+          if (!url) return null;
+
+          const isBase = !layer.bbox;
           return (
             <div
               key={layer.layer_id}
