@@ -91,12 +91,23 @@ export function AuthProvider({
       const response = await apiClient.get("/auth/users/me");
       if (response.data?.data) {
         const backendUser = response.data.data;
-        setUser({
-          uid: backendUser.id || backendUser.uid,
-          email: backendUser.email,
-          displayName: backendUser.name || backendUser.displayName,
-          photoURL: backendUser.photoURL || backendUser.profile_image,
-          ...backendUser,
+        const newUid = backendUser.id || backendUser.uid;
+
+        setUser((prev: any) => {
+          if (
+            prev &&
+            prev.uid === newUid &&
+            prev.profile_image === backendUser.profile_image
+          ) {
+            return prev; // 참조값을 유지하여 리렌더링 방지
+          }
+          return {
+            uid: newUid,
+            email: backendUser.email,
+            displayName: backendUser.name || backendUser.displayName,
+            photoURL: backendUser.photoURL || backendUser.profile_image,
+            ...backendUser,
+          };
         });
         return true;
       }
@@ -117,7 +128,7 @@ export function AuthProvider({
       if (typeof window === "undefined") return;
 
       const urlParams = new URLSearchParams(window.location.search);
-      
+
       // 1. 로그아웃 신호 처리
       if (urlParams.get("logout") === "true" || hasGlobalLogoutSignal()) {
         setIsLoggingOut(true);
@@ -135,7 +146,12 @@ export function AuthProvider({
       if (ssoToken) {
         clearGlobalLogoutSignal(); // 로그인 정보가 들어오면 로그아웃 신호 해제
         window.sessionStorage.setItem("sso_token", ssoToken);
-        const newUrl = window.location.pathname + window.location.search.replace(/[?&]sso_token=[^&]+/, "").replace(/^&/, "?").replace(/\?$/, "");
+        const newUrl =
+          window.location.pathname +
+          window.location.search
+            .replace(/[?&]sso_token=[^&]+/, "")
+            .replace(/^&/, "?")
+            .replace(/\?$/, "");
         window.history.replaceState({}, "", newUrl);
       }
 
@@ -161,7 +177,11 @@ export function AuthProvider({
     });
 
     const handleFocus = () => {
-      if (document.visibilityState === "visible" && !isLoggingOut && isInitialCheckDone.current) {
+      if (
+        document.visibilityState === "visible" &&
+        !isLoggingOut &&
+        isInitialCheckDone.current
+      ) {
         // 포커스 시점에 글로벌 로그아웃 신호가 감지되면 즉시 세션 파기
         if (hasGlobalLogoutSignal()) {
           clearLocalAuth();
@@ -179,10 +199,22 @@ export function AuthProvider({
       window.removeEventListener("focus", handleFocus);
       window.removeEventListener("visibilitychange", handleFocus);
     };
-  }, [refreshSession, clearLocalAuth, hasGlobalLogoutSignal, setGlobalLogoutSignal, clearGlobalLogoutSignal]);
+  }, [
+    refreshSession,
+    clearLocalAuth,
+    hasGlobalLogoutSignal,
+    setGlobalLogoutSignal,
+    clearGlobalLogoutSignal,
+  ]);
 
   useEffect(() => {
-    if (!loading && isInitialCheckDone.current && !user && requireAuth && !isLoggingOut) {
+    if (
+      !loading &&
+      isInitialCheckDone.current &&
+      !user &&
+      requireAuth &&
+      !isLoggingOut
+    ) {
       if (typeof window !== "undefined") {
         if (window.location.pathname.startsWith("/login")) return;
         window.location.href = getLoginUrl(window.location.href);
@@ -196,7 +228,9 @@ export function AuthProvider({
     setGlobalLogoutSignal(); // 글로벌 로그아웃 신호 발생
 
     try {
-      try { await apiClient.post("/auth/logout"); } catch (e) {}
+      try {
+        await apiClient.post("/auth/logout");
+      } catch (e) {}
       await clearLocalAuth();
       if (typeof window !== "undefined") {
         window.location.href = getLogoutUrl();
@@ -215,24 +249,33 @@ export function AuthProvider({
     try {
       const result = await signInWithPopup(auth, provider);
       const token = await result.user.getIdToken();
-      if (typeof window !== "undefined") window.sessionStorage.setItem("sso_token", token);
+      if (typeof window !== "undefined")
+        window.sessionStorage.setItem("sso_token", token);
       await refreshSession();
-    } catch (error) { throw error; }
+    } catch (error) {
+      throw error;
+    }
   };
 
   const loginWithEmail = async (email: string, pass: string) => {
     setIsLoggingOut(false);
     clearGlobalLogoutSignal(); // 로그인 시 신호 제거
     try {
-      const response = await apiClient.post("/auth/login", { email, password: pass });
+      const response = await apiClient.post("/auth/login", {
+        email,
+        password: pass,
+      });
       const token = response.data.data;
-      if (typeof window !== "undefined") window.sessionStorage.setItem("sso_token", token);
+      if (typeof window !== "undefined")
+        window.sessionStorage.setItem("sso_token", token);
       await refreshSession();
     } catch (error: any) {
       try {
         await signInWithEmailAndPassword(auth, email, pass);
         await refreshSession();
-      } catch (fbError) { throw error; }
+      } catch (fbError) {
+        throw error;
+      }
     }
   };
 
@@ -243,13 +286,26 @@ export function AuthProvider({
       const result = await createUserWithEmailAndPassword(auth, email, pass);
       await updateProfile(result.user, { displayName: name });
       const token = await result.user.getIdToken();
-      if (typeof window !== "undefined") window.sessionStorage.setItem("sso_token", token);
+      if (typeof window !== "undefined")
+        window.sessionStorage.setItem("sso_token", token);
       await refreshSession();
-    } catch (error) { throw error; }
+    } catch (error) {
+      throw error;
+    }
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, loginWithGoogle, loginWithEmail, signUpWithEmail, logout, refreshSession }}>
+    <AuthContext.Provider
+      value={{
+        user,
+        loading,
+        loginWithGoogle,
+        loginWithEmail,
+        signUpWithEmail,
+        logout,
+        refreshSession,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );
