@@ -1,10 +1,10 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, Suspense } from 'react';
 import { appendSSOToken, auth, useAuth } from '@repo/ui/auth';
 import { useRouter, useSearchParams } from 'next/navigation';
 
-export default function LoginPage(): React.JSX.Element {
+function LoginContent(): React.JSX.Element {
   const { user, loginWithGoogle, loginWithEmail, signUpWithEmail, loading } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -159,5 +159,13 @@ export default function LoginPage(): React.JSX.Element {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function LoginPage(): React.JSX.Element {
+  return (
+    <Suspense fallback={<div className="flex justify-center items-center h-screen">로딩 중...</div>}>
+      <LoginContent />
+    </Suspense>
   );
 }
