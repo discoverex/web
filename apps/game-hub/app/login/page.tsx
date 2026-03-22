@@ -1,13 +1,14 @@
 'use client';
 
-import React from 'react';
-import { useAuth } from '@repo/ui/auth';
-import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
+import { appendSSOToken, auth, useAuth } from '@repo/ui/auth';
+import { useRouter, useSearchParams } from 'next/navigation';
 
 export default function LoginPage(): React.JSX.Element {
   const { user, loginWithGoogle, loginWithEmail, signUpWithEmail, loading } = useAuth();
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const returnUrl = searchParams.get('returnUrl');
 
   const [isSignUp, setIsSignUp] = useState(false);
   const [email, setEmail] = useState('');
@@ -16,10 +17,29 @@ export default function LoginPage(): React.JSX.Element {
   const [error, setError] = useState('');
 
   useEffect(() => {
-    if (user) {
-      router.push('/');
-    }
-  }, [user, router]);
+    const handleRedirect = async () => {
+      // 로그아웃 요청 중이라면 리다이렉트 로직을 수행하지 않음
+      if (searchParams.get('logout') === 'true') return;
+
+      if (user) {
+        if (returnUrl) {
+          // 1. Firebase ID 토큰 시도
+          let token = await auth.currentUser?.getIdToken();
+
+          // 2. Firebase 토큰이 없다면 sessionStorage의 sso_token(자체 JWT) 사용
+          if (!token && typeof window !== 'undefined') {
+            token = window.sessionStorage.getItem('sso_token') || undefined;
+          }
+
+          window.location.href = token ? appendSSOToken(returnUrl, token) : returnUrl;
+        } else {
+          router.push('/');
+        }
+      }
+    };
+
+    handleRedirect();
+  }, [user, router, returnUrl, searchParams]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

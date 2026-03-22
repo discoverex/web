@@ -3,6 +3,7 @@
 import React from "react";
 import { useAuth } from "../auth";
 import Image from "next/image";
+import { getLoginUrl } from "../auth";
 
 export default function UserHeader(): React.JSX.Element {
   const { user, logout } = useAuth();
@@ -42,11 +43,7 @@ export default function UserHeader(): React.JSX.Element {
         </div>
       ) : (
         <a
-          href={
-            process.env.NODE_ENV === "production"
-              ? "https://discoverex-game-hub-329947062450.asia-northeast3.run.app/login"
-              : "http://localhost:3000/login"
-          }
+          href={getLoginUrl()}
           className="btn btn-primary btn-sm rounded-full px-5 shadow-sm text-xs font-bold"
         >
           Login

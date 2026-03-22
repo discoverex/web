@@ -34,7 +34,7 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <body className={`${pretendard.variable} font-sans min-h-screen w-full bg-base-100`}>
         <ThemeProvider attribute="data-theme" defaultTheme="dark" enableSystem={false}>
-          <AuthProvider>
+          <AuthProvider requireAuth={true}>
             <GlobalNavbar />
             <main className="p-4">{children}</main>
           </AuthProvider>
