@@ -1,0 +1,19 @@
+@keyframes bounce-up-down {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-5px);
+  }
+}
+
+.animate-bounce-char {
+  display: inline-block;
+  animation: bounce-up-down 0.8s ease-in-out infinite;
+}
+
+/* 공백 문자가 사라지지 않도록 처리 */
+.whitespace-pre {
+  white-space: pre;
+}

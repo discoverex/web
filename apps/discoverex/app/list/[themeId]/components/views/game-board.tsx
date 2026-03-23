@@ -5,6 +5,7 @@ import Image from 'next/image';
 import { BBox, LayerItem, Manifest } from '@/types/game';
 import { useRouter } from 'next/navigation';
 import Lottie from 'react-lottie';
+import './game-board.css';
 
 interface LayerDetails {
   lottie_id: string;
@@ -107,7 +108,7 @@ const AssetItem: React.FC<AssetItemProps> = ({
 };
 
 export const GameBoard: React.FC<GameBoardProps> = ({ theme, manifest, layerItems }) => {
-  const { background_img, answers } = manifest;
+  const { scene_ref, background_img, answers } = manifest;
   const [assets, setAssets] = useState<GameAsset[]>([]);
   const [back, setBack] = useState<string>('');
   const [playingId, setPlayingId] = useState<string | null>(null);
@@ -191,8 +192,8 @@ export const GameBoard: React.FC<GameBoardProps> = ({ theme, manifest, layerItem
       </div>
 
       {/* 우측 정답 리스트 (UI 예시) */}
-      <div className="px-6 min-w-[150px] flex flex-col gap-2">
-        <span className="font-bold text-2xl w-full text-center my-4">{theme}</span>
+      <div className="px-6 min-w-[150px] w-full sm:w-3/4 lg:w-1/3 flex flex-col gap-2 overflow-visible">
+        <span className="font-bold text-2xl w-full text-center my-4">{scene_ref.title}</span>
         <button
           className="btn btn-md px-4 py-2 bg-white dark:bg-zinc-800 rounded-md shadow transition-colors"
           onClick={() => router.push('/list')}
@@ -200,11 +201,31 @@ export const GameBoard: React.FC<GameBoardProps> = ({ theme, manifest, layerItem
           ← back to list
         </button>
         <h3 className="font-bold border-b pb-1 mt-6 mb-2">Answers</h3>
-        {manifest.answers.map((a) => (
-          <span key={a.prompt} className="text-sm opacity-80">
-            • {a.prompt}
-          </span>
-        ))}
+        {manifest.answers.map((a) => {
+          const isActive = playingId === a.lottie_id;
+          return (
+            <span
+              key={a.lottie_id}
+              className={`text-sm transition-all duration-300 flex items-center gap-1 ${
+                isActive ? 'text-green-500 font-bold' : 'opacity-80'
+              }`}
+            >
+              <span className={isActive ? 'inline-block mr-1' : 'hidden'}>✨</span>
+              <span className="mr-1">•</span>
+              <span className="flex">
+                {a.prompt.split('').map((char, index) => (
+                  <span
+                    key={index}
+                    className={`${isActive ? 'animate-bounce-char' : ''} ${char === ' ' ? 'whitespace-pre' : ''}`}
+                    style={isActive ? { animationDelay: `${index * 0.05}s` } : {}}
+                  >
+                    {char}
+                  </span>
+                ))}
+              </span>
+            </span>
+          );
+        })}
       </div>
     </div>
   );
