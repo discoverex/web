@@ -4,6 +4,7 @@ import { auth } from "./firebase";
 const apiClient = axios.create({
   baseURL:
     process.env.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_SERVER_URL,
+  withCredentials: true, // 쿠키 전송 허용
   headers: {
     "Content-Type": "application/json",
   },

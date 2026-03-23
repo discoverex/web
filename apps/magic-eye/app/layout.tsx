@@ -2,6 +2,7 @@ import React from 'react';
 import type { Metadata } from 'next';
 import './globals.css';
 import { AuthProvider } from '@repo/ui/auth';
+import { getServerUser } from '@repo/ui/auth/server';
 import { GlobalNavbar, ThemeProvider } from '@repo/ui/navbar';
 import localFont from 'next/font/local';
 
@@ -25,16 +26,17 @@ export const metadata: Metadata = {
   description: 'Vision AI가 생성한 신비로운 매직아이 퀴즈',
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
-}>) {
+}>): Promise<React.ReactElement> {
+  const user = await getServerUser();
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={`${pretendard.variable} font-sans min-h-screen w-full bg-base-100`}>
         <ThemeProvider attribute="data-theme" defaultTheme="dark" enableSystem={false}>
-          <AuthProvider requireAuth={true}>
+          <AuthProvider requireAuth={true} initialUser={user}>
             <GlobalNavbar />
             <main className="p-4">{children}</main>
           </AuthProvider>

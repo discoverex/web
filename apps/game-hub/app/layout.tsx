@@ -3,6 +3,7 @@ import localFont from 'next/font/local';
 import './globals.css';
 import { ThemeProvider } from '@repo/ui/navbar';
 import { AuthProvider } from '@repo/ui/auth';
+import { getServerUser } from '@repo/ui/auth/server';
 import { GlobalNavbar } from '@repo/ui/navbar';
 import React from 'react';
 
@@ -26,17 +27,18 @@ export const metadata: Metadata = {
   description: 'AI 기반 게임들의 메인 허브',
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
-}>): React.ReactElement {
-  
+}>): Promise<React.ReactElement> {
+  const user = await getServerUser();
+
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={`${pretendard.variable} font-sans min-h-screen w-full bg-base-100`}>
         <ThemeProvider attribute="data-theme" defaultTheme="dark" enableSystem={false}>
-          <AuthProvider>
+          <AuthProvider initialUser={user}>
             <GlobalNavbar />
             <main className="p-4">{children}</main>
           </AuthProvider>

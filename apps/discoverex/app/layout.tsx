@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
 import { AuthProvider } from "@repo/ui/auth";
+import { getServerUser } from "@repo/ui/auth/server";
 import { GlobalNavbar, ThemeProvider } from "@repo/ui/navbar";
 
 const pretendard = localFont({
@@ -24,18 +25,19 @@ export const metadata: Metadata = {
   description: "Vision AI를 활용한 숨은 렉스 찾기 게임",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
-}>) {
+}>): Promise<React.ReactElement> {
+  const user = await getServerUser();
   return (
     <html lang="en" suppressHydrationWarning>
       <body
         className={`${pretendard.variable} font-sans min-h-screen w-full bg-base-100`}
       >
         <ThemeProvider attribute="data-theme" defaultTheme="dark" enableSystem={false}>
-          <AuthProvider requireAuth={true}>
+          <AuthProvider requireAuth={true} initialUser={user}>
             <GlobalNavbar />
             <main className="p-4">{children}</main>
           </AuthProvider>

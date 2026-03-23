@@ -39,14 +39,16 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export function AuthProvider({
   children,
   requireAuth = false,
+  initialUser = null,
 }: {
   children: ReactNode;
   requireAuth?: boolean;
+  initialUser?: any | null;
 }): React.ReactElement {
-  const [user, setUser] = useState<any | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [user, setUser] = useState<any | null>(initialUser);
+  const [loading, setLoading] = useState(!initialUser);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
-  const isInitialCheckDone = useRef(false);
+  const isInitialCheckDone = useRef(!!initialUser);
 
   // 글로벌 로그아웃 신호 관리 (쿠키 활용 - localhost 포트 간 공유됨)
   const setGlobalLogoutSignal = useCallback(() => {

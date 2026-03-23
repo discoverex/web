@@ -5,6 +5,7 @@
   "exports": {
     "./*": "./src/*.tsx",
     "./auth": "./src/auth/index.ts",
+    "./auth/server": "./src/auth/server-auth.ts",
     "./navbar": "./src/navbar/index.ts"
   },
   "scripts": {
