@@ -8,7 +8,7 @@ export async function getServerUser() {
     return null;
   }
 
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_SERVER_URL;
+  const apiUrl = process.env.NEXT_PUBLIC_SERVER_URL;
 
   try {
     const response = await fetch(`${apiUrl}/auth/users/me`, {
