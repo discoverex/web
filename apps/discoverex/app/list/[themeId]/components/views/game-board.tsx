@@ -4,7 +4,7 @@ import React, { useEffect, useState } from 'react';
 import Image from 'next/image';
 import { BBox, LayerItem, Manifest } from '@/types/game';
 import { useRouter } from 'next/navigation';
-import { DotLottieReact } from '@lottiefiles/dotlottie-react';
+import Lottie from 'react-lottie';
 
 interface LayerDetails {
   lottie_id: string;
@@ -29,7 +29,7 @@ interface AssetItemProps {
   playingId: string | null;
   onPlay: (id: string) => void;
   onComplete: () => void;
-  blobUrl?: string;
+  animationData?: any;
   backgroundWidth: number;
   backgroundHeight: number;
 }
@@ -39,11 +39,30 @@ const AssetItem: React.FC<AssetItemProps> = ({
   playingId,
   onPlay,
   onComplete,
-  blobUrl,
+  animationData,
   backgroundWidth,
   backgroundHeight,
 }) => {
   const isPlaying = playingId === asset.lottie_id;
+
+  // 로티 애니메이션이 원본 bbox보다 더 넓은 범위를 표현할 수 있도록 확장 비율 설정
+  const lottieScale = 11.0;
+
+  const lottieOptions = {
+    loop: false,
+    autoplay: true,
+    animationData: animationData,
+    rendererSettings: {
+      preserveAspectRatio: 'xMidYMid meet', // meet를 사용하여 캔버스 내 전체가 보이도록 함
+    },
+  };
+
+  const eventListeners = [
+    {
+      eventName: 'complete' as const,
+      callback: onComplete,
+    },
+  ];
 
   return (
     <div
@@ -55,22 +74,25 @@ const AssetItem: React.FC<AssetItemProps> = ({
         width: `${(asset.bbox.w / backgroundWidth) * 100}%`,
         height: `${(asset.bbox.h / backgroundHeight) * 100}%`,
         cursor: 'pointer',
+        overflow: 'visible',
         zIndex: 20,
       }}
     >
-      {/* Lottie 애니메이션 (재생 중일 때만 표시) */}
-      {isPlaying && (
-        <DotLottieReact
-          src={blobUrl || asset.lottieUrl}
-          autoplay
-          loop={false}
-          dotLottieRefCallback={(dotLottie) => {
-            if (dotLottie) {
-              dotLottie.addEventListener('complete', onComplete);
-            }
+      {/* Lottie 애니메이션 (재생 중일 때만 표시, 확장된 영역 사용) */}
+      {isPlaying && animationData && (
+        <div
+          style={{
+            position: 'absolute',
+            left: '50%',
+            top: '50%',
+            width: `${lottieScale * 100}%`,
+            height: `${lottieScale * 100}%`,
+            transform: 'translate(-50%, -50%)',
+            pointerEvents: 'none',
           }}
-          style={{ width: '100%', height: '100%' }}
-        />
+        >
+          <Lottie options={lottieOptions} eventListeners={eventListeners} height="100%" width="100%" />
+        </div>
       )}
 
       {/* PNG 이미지 (재생 중이 아닐 때만 표시) */}
@@ -87,10 +109,10 @@ export const GameBoard: React.FC<GameBoardProps> = ({ theme, manifest, layerItem
   const [back, setBack] = useState<string>('');
   const [playingId, setPlayingId] = useState<string | null>(null);
   const router = useRouter();
-  const [blobUrls, setBlobUrls] = useState<Record<string, string>>({});
+  const [lottieData, setLottieData] = useState<Record<string, any>>({});
 
   useEffect(() => {
-    const lottieLayerForms = layerItems.filter((e) => e.name.includes('.lottie') || e.name.includes('.json'));
+    const lottieLayerForms = layerItems.filter((e) => e.name.includes('.json'));
     const pngLayerForms = layerItems.filter((e) => e.name.includes('.png'));
 
     const combinedAssets: GameAsset[] = answers
@@ -120,22 +142,20 @@ export const GameBoard: React.FC<GameBoardProps> = ({ theme, manifest, layerItem
 
   useEffect(() => {
     assets.forEach(async (asset) => {
-      if (!blobUrls[asset.lottieUrl]) {
+      if (!lottieData[asset.lottieUrl]) {
         try {
           const res = await fetch(asset.lottieUrl);
-          const blob = await res.blob();
-          const typedBlob = new Blob([blob], { type: 'application/dotlottie' });
-          const newUrl = URL.createObjectURL(typedBlob);
-          setBlobUrls((prev) => ({ ...prev, [asset.lottieUrl]: newUrl }));
+          const data = await res.json();
+          setLottieData((prev) => ({ ...prev, [asset.lottieUrl]: data }));
         } catch (error) {
-          console.error('Failed to load lottie:', asset.lottieUrl, error);
+          console.error('Failed to load lottie JSON:', asset.lottieUrl, error);
         }
       }
     });
   }, [assets]);
 
   return (
-    <div className="p-4 flex justify-center gap-6 flex-row flex-wrap bg-gray-200 dark:bg-black rounded-lg w-full overflow-hidden relative cursor-pointer">
+    <div className="p-4 flex justify-center gap-6 flex-row flex-wrap bg-gray-200 dark:bg-black rounded-lg w-full overflow-hidden relative">
       <div
         style={{
           aspectRatio: `${background_img.width} / ${background_img.height}`,
@@ -163,7 +183,7 @@ export const GameBoard: React.FC<GameBoardProps> = ({ theme, manifest, layerItem
             playingId={playingId}
             onPlay={(id) => setPlayingId(id)}
             onComplete={() => setPlayingId(null)}
-            blobUrl={blobUrls[asset.lottieUrl]}
+            animationData={lottieData[asset.lottieUrl]}
             backgroundWidth={background_img.width}
             backgroundHeight={background_img.height}
           />

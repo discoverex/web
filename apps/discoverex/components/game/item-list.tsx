@@ -20,12 +20,12 @@ export const ItemList: React.FC<ItemListProps> = ({ items, foundIds, getThumbnai
 
       <div className="flex flex-wrap gap-4 justify-center items-center">
         {items.map((region) => {
-          const isFound = foundIds.includes(region.region_id);
+          const isFound = foundIds.includes(region.lottie_id);
           const url = getThumbnailUrl(region);
 
           return (
             <div
-              key={region.region_id}
+              key={region.lottie_id}
               className={`relative group transition-all duration-300 ${
                 isFound ? 'opacity-30 grayscale scale-90' : 'hover:scale-110 hover:-translate-y-1'
               }`}

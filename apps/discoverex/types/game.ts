@@ -20,7 +20,7 @@ export interface BackgroundImage {
   height: number;
 }
 
-interface Answer {
+export interface Region {
   lottie_id: string;
   name: string;
   src: string; // 파일명
@@ -37,7 +37,7 @@ export interface Manifest {
     version_id: string;
   };
   background_img: BackgroundImage;
-  answers: Answer[];
+  answers: Region[];
 }
 
 export interface LayerItem {
