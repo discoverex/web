@@ -14,7 +14,6 @@ interface LayerDetails {
 
 interface GameAsset extends LayerDetails {
   lottieUrl: string;
-  pngUrl: string;
   name: string;
 }
 
@@ -46,14 +45,14 @@ const AssetItem: React.FC<AssetItemProps> = ({
   const isPlaying = playingId === asset.lottie_id;
 
   // 로티 애니메이션이 원본 bbox보다 더 넓은 범위를 표현할 수 있도록 확장 비율 설정
-  const lottieScale = 11.0;
+  const lottieScale = 4.0;
 
   const lottieOptions = {
     loop: false,
-    autoplay: true,
+    autoplay: false, // 기본적으로는 자동 재생 방지
     animationData: animationData,
     rendererSettings: {
-      preserveAspectRatio: 'xMidYMid meet', // meet를 사용하여 캔버스 내 전체가 보이도록 함
+      preserveAspectRatio: 'xMidYMid meet',
     },
   };
 
@@ -78,27 +77,31 @@ const AssetItem: React.FC<AssetItemProps> = ({
         zIndex: 20,
       }}
     >
-      {/* Lottie 애니메이션 (재생 중일 때만 표시, 확장된 영역 사용) */}
-      {isPlaying && animationData && (
-        <div
-          style={{
-            position: 'absolute',
-            left: '50%',
-            top: '50%',
-            width: `${lottieScale * 100}%`,
-            height: `${lottieScale * 100}%`,
-            transform: 'translate(-50%, -50%)',
-            pointerEvents: 'none',
-          }}
-        >
-          <Lottie options={lottieOptions} eventListeners={eventListeners} height="100%" width="100%" />
-        </div>
-      )}
-
-      {/* PNG 이미지 (재생 중이 아닐 때만 표시) */}
-      {!isPlaying && (
-        <Image src={asset.pngUrl} alt={asset.name} fill crossOrigin="anonymous" className="object-contain" />
-      )}
+      {/* Lottie 애니메이션 (항상 표시, 클릭 시 재생) */}
+      <div
+        style={{
+          position: 'absolute',
+          left: '50%',
+          top: '50%',
+          width: `${lottieScale * 100}%`,
+          height: `${lottieScale * 100}%`,
+          transform: 'translate(-50%, -50%)',
+          pointerEvents: 'none', // 클릭은 부모 div(bbox 영역)에서 처리
+        }}
+      >
+        {animationData && (
+          <Lottie
+            options={{
+              ...lottieOptions,
+              autoplay: isPlaying,
+            }}
+            isStopped={!isPlaying}
+            eventListeners={eventListeners}
+            height="100%"
+            width="100%"
+          />
+        )}
+      </div>
     </div>
   );
 };
@@ -113,20 +116,17 @@ export const GameBoard: React.FC<GameBoardProps> = ({ theme, manifest, layerItem
 
   useEffect(() => {
     const lottieLayerForms = layerItems.filter((e) => e.name.includes('.json'));
-    const pngLayerForms = layerItems.filter((e) => e.name.includes('.png'));
 
     const combinedAssets: GameAsset[] = answers
       .map((e) => {
         const lottieTarget = lottieLayerForms.find((x) => x.name.includes(e.src.split('.')[0]));
-        const pngTarget = pngLayerForms.find((x) => x.name === e.src);
 
-        if (lottieTarget && pngTarget) {
+        if (lottieTarget) {
           return {
             lottie_id: e.lottie_id,
             bbox: e.bbox,
             order: e.order,
             lottieUrl: lottieTarget.url,
-            pngUrl: pngTarget.url,
             name: e.src,
           };
         }
@@ -175,7 +175,7 @@ export const GameBoard: React.FC<GameBoardProps> = ({ theme, manifest, layerItem
           />
         )}
 
-        {/* 정답 아이템 레이어들 (PNG + Lottie) */}
+        {/* 정답 아이템 레이어들 (Lottie 전용) */}
         {assets.map((asset) => (
           <AssetItem
             key={asset.lottie_id}
