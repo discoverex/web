@@ -5,39 +5,10 @@ export interface BBox {
   h: number;
 }
 
-interface Region {
+export interface Region {
   region_id: 'r-e2e06a3c05';
   bbox: BBox;
   role: 'answer' | 'candidate';
-}
-
-export interface LayerItem {
-  layer_id: string;
-  type: string;
-  image_ref: string;
-  bbox: BBox | null;
-  z_index: number;
-  order: number;
-  source_region_id: string | null;
-}
-
-export interface GameMetadata {
-  meta: {
-    scene_id: string;
-    [key: string]: any;
-  };
-  background: {
-    asset_ref: string;
-    width: number;
-    height: number;
-  };
-  regions: Region[];
-  layers: {
-    items: LayerItem[];
-  };
-  answer: {
-    answer_region_ids: string[];
-  };
 }
 
 export interface ThemeListResponse {
@@ -47,17 +18,17 @@ export interface ThemeListResponse {
   };
 }
 
-interface Layer {
+export interface Layer {
   layer_id: string;
   type: 'base' | 'inpaint_patch' | 'composite' | 'fx_overlay';
   image_ref: string;
-  bbox: null;
+  bbox: BBox;
   z_index: number;
   order: number;
   source_region_id: string | null;
 }
 
-interface Playable {
+export interface Playable {
   image_ref: string;
   width: number;
   height: number;
@@ -75,17 +46,25 @@ interface AnswerKey {
   regions: Region[];
 }
 
+export interface Manifest {
+  scene_ref: {
+    scene_id: string;
+    version_id: string;
+  };
+  playable: Playable;
+  answer_key: AnswerKey;
+}
+
+export interface LayerItem {
+  name: string;
+  url: string;
+}
+
 export interface Theme {
   theme: string;
-  layers: { name: string; url: string }[];
-  manifest: {
-    scene_ref: {
-      scene_id: string;
-      version_id: string;
-    };
-    playable: Playable;
-    answer_key: AnswerKey;
-  };
+  layers: LayerItem[];
+  manifest: Manifest;
+  lottie: string;
 }
 
 export interface ThemeResponse {

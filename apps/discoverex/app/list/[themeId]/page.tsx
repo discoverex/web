@@ -8,8 +8,9 @@ type ThemePageProps = {
 
 const Page = async ({ params }: ThemePageProps) => {
   const { themeId } = await params;
-  const theme = await getTheme(themeId);
-  return <ThemeContainer theme={theme} />;
+  const themeData = await getTheme(themeId);
+
+  return <ThemeContainer themeData={themeData} />;
 };
 
 export default Page;

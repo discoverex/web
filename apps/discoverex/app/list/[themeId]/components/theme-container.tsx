@@ -1,12 +1,16 @@
 import React from 'react';
 import { Theme } from '@/types/game';
+import { GameBoard } from '@/app/list/[themeId]/components/views/game-board';
 
 type ThemeContainerProps = {
-  theme: Theme | null;
+  themeData: Theme | null;
 };
 
-const ThemeContainer = ({ theme }: ThemeContainerProps) => {
-  return <div>{theme?.theme}</div>;
+const ThemeContainer = ({ themeData }: ThemeContainerProps) => {
+  if (themeData) {
+    const { manifest, layers, lottie } = themeData;
+    return <GameBoard manifest={manifest} layerItems={layers} lottie={lottie} />;
+  }
 };
 
 export default ThemeContainer;
