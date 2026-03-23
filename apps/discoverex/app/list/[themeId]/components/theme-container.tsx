@@ -8,8 +8,8 @@ type ThemeContainerProps = {
 
 const ThemeContainer = ({ themeData }: ThemeContainerProps) => {
   if (themeData) {
-    const { manifest, layers, lottie } = themeData;
-    return <GameBoard manifest={manifest} layerItems={layers} lottie={lottie} />;
+    const { theme, manifest, layers } = themeData;
+    return <GameBoard theme={theme} manifest={manifest} layerItems={layers} />;
   }
 };
 
