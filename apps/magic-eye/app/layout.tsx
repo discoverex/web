@@ -37,7 +37,7 @@ export default async function RootLayout({
       <body className={`${pretendard.variable} font-sans min-h-screen w-full bg-base-100`}>
         <ThemeProvider attribute="data-theme" defaultTheme="dark" enableSystem={false}>
           <AuthProvider requireAuth={true} initialUser={user}>
-            <GlobalNavbar />
+            <GlobalNavbar user={user} />
             <main className="p-4">{children}</main>
           </AuthProvider>
         </ThemeProvider>

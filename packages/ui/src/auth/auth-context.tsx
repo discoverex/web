@@ -130,23 +130,23 @@ export function AuthProvider({
       if (typeof window === "undefined") return;
 
       const urlParams = new URLSearchParams(window.location.search);
+      const ssoToken = urlParams.get("sso_token");
+      const logoutParam = urlParams.get("logout") === "true";
 
       // 1. 로그아웃 신호 처리
-      if (urlParams.get("logout") === "true" || hasGlobalLogoutSignal()) {
+      if (logoutParam || hasGlobalLogoutSignal()) {
         setIsLoggingOut(true);
-        setGlobalLogoutSignal(); // 다른 앱들을 위해 신호 유지/생성
+        setGlobalLogoutSignal();
         await clearLocalAuth();
         isInitialCheckDone.current = true;
         setLoading(false);
-        // 로그아웃 처리 후 약간의 시간 뒤에 플래그 해제 (다른 앱들이 인지할 시간 부여)
         setTimeout(() => setIsLoggingOut(false), 500);
         return;
       }
 
       // 2. SSO 토큰 처리
-      const ssoToken = urlParams.get("sso_token");
       if (ssoToken) {
-        clearGlobalLogoutSignal(); // 로그인 정보가 들어오면 로그아웃 신호 해제
+        clearGlobalLogoutSignal();
         window.sessionStorage.setItem("sso_token", ssoToken);
         const newUrl =
           window.location.pathname +
@@ -155,24 +155,36 @@ export function AuthProvider({
             .replace(/^&/, "?")
             .replace(/\?$/, "");
         window.history.replaceState({}, "", newUrl);
+        // SSO 토큰이 새로 들어왔을 때는 세션 갱신 필요
+        await refreshSession();
+        return;
       }
 
       // 3. 백엔드 세션 확인
-      await refreshSession();
+      // 만약 서버에서 이미 유저를 가져왔다면(initialUser), 
+      // 클라이언트에서 즉시 다시 묻지 않고 일단 믿습니다.
+      if (initialUser && !isInitialCheckDone.current) {
+        isInitialCheckDone.current = true;
+        setLoading(false);
+      } else if (!isInitialCheckDone.current) {
+        await refreshSession();
+      }
     };
 
     initAuth();
 
     const unsubscribe = onAuthStateChanged(auth, async (fbUser) => {
+      // isInitialCheckDone이 false인 동안(초기화 중)에는 
+      // Firebase의 초기 null 응답이 서버 유저 정보를 지우지 못하게 차단합니다.
       if (isInitialCheckDone.current && !isLoggingOut) {
         if (fbUser) {
-          // 로그아웃 신호가 있는 상태에서 Firebase가 멋대로 로그인하려 하면 차단
           if (hasGlobalLogoutSignal()) {
             await clearLocalAuth();
           } else {
             await refreshSession();
           }
-        } else {
+        } else if (!initialUser) {
+          // 서버 유저도 없고 Firebase 유저도 없으면 확실히 null
           setUser(null);
         }
       }

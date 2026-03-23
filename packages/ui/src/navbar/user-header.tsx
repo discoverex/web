@@ -5,8 +5,24 @@ import { useAuth } from "../auth";
 import Image from "next/image";
 import { getLoginUrl } from "../auth";
 
-export default function UserHeader(): React.JSX.Element {
-  const { user, logout } = useAuth();
+interface UserHeaderProps {
+  initialUser?: any | null;
+}
+
+export default function UserHeader({
+  initialUser,
+}: UserHeaderProps): React.JSX.Element {
+  const { user: authUser, logout, loading } = useAuth();
+
+  // 서버에서 받은 정보가 있거나, 클라이언트 인증이 완료된 유저 정보를 우선 사용
+  const user = authUser || initialUser;
+
+  // 로딩 중이고 아직 유저 정보가 확정되지 않았다면 아무것도 보여주지 않거나 스켈레톤 표시 (깜빡임 방지)
+  if (loading && !user) {
+    return (
+      <div className="w-20 h-8 bg-gray-200 dark:bg-gray-800 animate-pulse rounded-full"></div>
+    );
+  }
 
   return (
     <div className="flex items-center gap-4">

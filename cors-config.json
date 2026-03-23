@@ -1,6 +1,7 @@
 [
   {
     "origin": [
+      "http://localhost:3001",
       "http://localhost:3002",
       "https://discoverex-magic-eye-329947062450.asia-northeast3.run.app",
       "https://discoverex-discoverex-329947062450.asia-northeast3.run.app"

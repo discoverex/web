@@ -2,24 +2,36 @@
 
 import React from "react";
 import { menus } from "./menus";
-import { auth } from "../auth";
+import { useAuth, auth } from "../auth";
 import UserHeader from "./user-header";
 import ThemeSwitcher from "./theme-switcher";
 
-export default function GlobalNavbar(): React.JSX.Element {
+export default function GlobalNavbar({
+  user: initialUser,
+}: {
+  user?: any | null;
+}): React.JSX.Element {
+  const { user: authUser } = useAuth();
+  
+  // 현재 활성 유저 (인증된 유저 정보 우선)
+  const user = authUser || initialUser;
+
   const handleSSOLink = async (
     e: React.MouseEvent<HTMLAnchorElement>,
     path: string,
   ) => {
     e.preventDefault();
-    const user = auth.currentUser;
+    
+    // Firebase SDK가 준비되었을 경우 실제 객체를 가져옴
+    const fbUser = auth.currentUser;
     let finalPath = path;
 
-    if (user) {
-      const token = await user.getIdToken();
+    if (fbUser) {
+      const token = await fbUser.getIdToken();
       const separator = finalPath.includes("?") ? "&" : "?";
       finalPath = `${finalPath}${separator}sso_token=${token}`;
     } else {
+      // Firebase가 아직 준비 안됐거나, 서버 유저 정보만 있는 경우 세션 스토리지 등 활용
       const ssoToken =
         typeof window !== "undefined"
           ? window.sessionStorage.getItem("sso_token")
@@ -67,7 +79,7 @@ export default function GlobalNavbar(): React.JSX.Element {
 
           {/* 오른쪽 영역: 사용자 정보 + 테마 스위처 */}
           <div className="flex items-center gap-4">
-            <UserHeader />
+            <UserHeader initialUser={initialUser} />
             <div className="divider divider-horizontal mx-0 h-8 opacity-20"></div>
             <ThemeSwitcher />
           </div>
