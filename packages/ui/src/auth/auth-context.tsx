@@ -247,7 +247,7 @@ export function AuthProvider({
   ]);
 
   useEffect(() => {
-    /*if (
+    if (
       !loading &&
       isInitialCheckDone.current &&
       !user &&
@@ -259,7 +259,7 @@ export function AuthProvider({
         if (window.location.pathname.startsWith("/login")) return;
         window.location.href = getLoginUrl(window.location.href);
       }
-    }*/
+    }
   }, [loading, user, requireAuth, isLoggingOut]);
 
   const logout = async () => {
