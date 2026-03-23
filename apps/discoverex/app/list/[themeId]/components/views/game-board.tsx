@@ -23,6 +23,7 @@ interface GameBoardProps {
 export const GameBoard: React.FC<GameBoardProps> = ({ theme, manifest, layerItems }) => {
   const { background_img, answers } = manifest;
   const [lotties, setLotties] = useState<LayerForm[]>([]);
+  const [pngs, setPngs] = useState<LayerForm[]>([]);
   const [back, setBack] = useState<string>('');
   const [, setPlayingId] = useState<string | null>(null); // 현재 재생 중인 Lottie ID
   const router = useRouter();
@@ -30,12 +31,16 @@ export const GameBoard: React.FC<GameBoardProps> = ({ theme, manifest, layerItem
 
   useEffect(() => {
     // 1. .lottie 및 .json 파일 필터링
-    const layerForms = layerItems.filter((e) => e.name.includes('.lottie') || e.name.includes('.json'));
+    const lottieLayerForms = layerItems.filter((e) => e.name.includes('.lottie') || e.name.includes('.json'));
+    const pngLayerForms = layerItems.filter((e) => e.name.includes('.png'));
+    console.log(lottieLayerForms);
+    console.log(pngLayerForms);
+    console.log(answers);
 
     // 2. fetch 없이 URL 매핑만 수행 (PK... 에러 방지 핵심)
-    const tempAssets: LayerForm[] = answers
+    const tempLotties: LayerForm[] = answers
       .map((e) => {
-        const target = layerForms.find((x) => x.name.includes(e.src.split('.')[0]));
+        const target = lottieLayerForms.find((x) => x.name.includes(e.src.split('.')[0]));
         if (target) {
           return {
             ...target,
@@ -48,11 +53,28 @@ export const GameBoard: React.FC<GameBoardProps> = ({ theme, manifest, layerItem
       })
       .filter((asset): asset is LayerForm => asset !== null);
 
+    const tempPngs: LayerForm[] = answers
+      .map((e) => {
+        const target = pngLayerForms.find((x) => x.name === e.src);
+        if (target) {
+          return {
+            ...target,
+            lottie_id: '',
+            bbox: e.bbox,
+            order: e.order,
+          };
+        }
+        return null;
+      })
+      .filter((asset): asset is LayerForm => asset !== null);
+
     // 배경 이미지 설정
     const targetBackUrl = layerItems.find((e) => e.name === background_img.src)?.url;
     if (targetBackUrl) setBack(targetBackUrl);
 
-    setLotties(tempAssets.sort((a, b) => a.order - b.order));
+    setLotties(tempLotties.sort((a, b) => a.order - b.order));
+    setPngs(tempPngs.sort((a, b) => a.order - b.order));
+    console.log(tempPngs);
   }, [answers, layerItems, background_img.src]);
 
   useEffect(() => {
