@@ -82,64 +82,71 @@ export function AuthProvider({
 
   const isRefreshing = useRef(false); // 중복 호출 방지용 Lock
 
-  const refreshSession = useCallback(async () => {
-    if (isLoggingOut || isRefreshing.current) return false;
+  const refreshSession = useCallback(
+    async (manualToken?: string) => {
+      if (isLoggingOut || isRefreshing.current) return false;
 
-    // 쿨타임 체크 추가 (함수 진입 시점에서도 보호)
-    const now = Date.now();
-    if (now - lastCheckTime.current < 2000) return false;
+      // 쿨타임 체크 추가 (함수 진입 시점에서도 보호)
+      const now = Date.now();
+      if (now - lastCheckTime.current < 2000) return false;
 
-    isRefreshing.current = true; // 실행 시작 시 잠금
-    lastCheckTime.current = now;
+      isRefreshing.current = true; // 실행 시작 시 잠금
+      lastCheckTime.current = now;
 
-    // 만약 글로벌 로그아웃 신호가 있다면 백엔드에 묻지 않고 바로 로컬 파기
-    if (hasGlobalLogoutSignal()) {
-      await clearLocalAuth();
-      isInitialCheckDone.current = true;
-      setLoading(false);
-      return false;
-    }
-
-    try {
-      const response = await apiClient.get("/auth/users/me");
-      if (response.data?.data) {
-        const backendUser = response.data.data;
-        const newUid = backendUser.id || backendUser.uid;
-
-        setUser((prev: any) => {
-          // 필요한 핵심 필드만 비교
-          const isSameUser =
-            prev &&
-            prev.uid === newUid &&
-            prev.email === backendUser.email &&
-            prev.photoURL ===
-              (backendUser.photoURL || backendUser.profile_image);
-
-          if (isSameUser) return prev; // 데이터가 같으면 '절대' 새 객체를 만들지 않음
-
-          // 꼭 필요한 데이터만 정제해서 저장 (서버의 가변 필드 제외)
-          return {
-            uid: newUid,
-            email: backendUser.email,
-            displayName: backendUser.name || backendUser.displayName,
-            photoURL: backendUser.photoURL || backendUser.profile_image,
-          };
-        });
-        return true;
+      // 만약 글로벌 로그아웃 신호가 있다면 백엔드에 묻지 않고 바로 로컬 파기
+      if (hasGlobalLogoutSignal()) {
+        await clearLocalAuth();
+        isInitialCheckDone.current = true;
+        setLoading(false);
+        return false;
       }
-      throw new Error("No session");
-    } catch (error: any) {
-      if (error.response?.status === 401) {
-        await clearLocalAuth(); // 확실한 세션 만료 시에만 파기
+
+      try {
+        const config = manualToken
+          ? { headers: { Authorization: `Bearer ${manualToken}` } }
+          : {};
+
+        const response = await apiClient.get("/auth/users/me", config);
+        if (response.data?.data) {
+          const backendUser = response.data.data;
+          const newUid = backendUser.id || backendUser.uid;
+
+          setUser((prev: any) => {
+            // 필요한 핵심 필드만 비교
+            const isSameUser =
+              prev &&
+              prev.uid === newUid &&
+              prev.email === backendUser.email &&
+              prev.photoURL ===
+                (backendUser.photoURL || backendUser.profile_image);
+
+            if (isSameUser) return prev; // 데이터가 같으면 '절대' 새 객체를 만들지 않음
+
+            // 꼭 필요한 데이터만 정제해서 저장 (서버의 가변 필드 제외)
+            return {
+              uid: newUid,
+              email: backendUser.email,
+              displayName: backendUser.name || backendUser.displayName,
+              photoURL: backendUser.photoURL || backendUser.profile_image,
+            };
+          });
+          return true;
+        }
+        throw new Error("No session");
+      } catch (error: any) {
+        if (error.response?.status === 401) {
+          await clearLocalAuth(); // 확실한 세션 만료 시에만 파기
+        }
+        // 그 외의 에러(500 등)는 세션을 유지하며 false만 반환
+        return false;
+      } finally {
+        isInitialCheckDone.current = true;
+        setLoading(false);
+        isRefreshing.current = false; // 실행 완료 후 잠금 해제
       }
-      // 그 외의 에러(500 등)는 세션을 유지하며 false만 반환
-      return false;
-    } finally {
-      isInitialCheckDone.current = true;
-      setLoading(false);
-      isRefreshing.current = false; // 실행 완료 후 잠금 해제
-    }
-  }, [clearLocalAuth, isLoggingOut, hasGlobalLogoutSignal]);
+    },
+    [clearLocalAuth, isLoggingOut, hasGlobalLogoutSignal],
+  );
 
   useEffect(() => {
     const initAuth = async () => {
@@ -164,15 +171,20 @@ export function AuthProvider({
       if (ssoToken) {
         clearGlobalLogoutSignal();
         window.sessionStorage.setItem("sso_token", ssoToken);
-        const newUrl =
-          window.location.pathname +
-          window.location.search
-            .replace(/[?&]sso_token=[^&]+/, "")
-            .replace(/^&/, "?")
-            .replace(/\?$/, "");
-        window.history.replaceState({}, "", newUrl);
-        // SSO 토큰이 새로 들어왔을 때는 세션 갱신 필요
-        await refreshSession();
+
+        // 1. 먼저 세션을 확실히 갱신
+        const success = await refreshSession(ssoToken);
+
+        // 2. 세션 갱신에 성공했을 때만 URL을 청소
+        if (success) {
+          const newUrl =
+            window.location.pathname +
+            window.location.search
+              .replace(/[?&]sso_token=[^&]+/, "")
+              .replace(/^&/, "?")
+              .replace(/\?$/, "");
+          window.history.replaceState({}, "", newUrl);
+        }
         return;
       }
 
@@ -240,7 +252,8 @@ export function AuthProvider({
       isInitialCheckDone.current &&
       !user &&
       requireAuth &&
-      !isLoggingOut
+      !isLoggingOut &&
+      !isRefreshing.current
     ) {
       if (typeof window !== "undefined") {
         if (window.location.pathname.startsWith("/login")) return;
