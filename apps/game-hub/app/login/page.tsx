@@ -55,7 +55,7 @@ function LoginContent(): React.JSX.Element {
     }
   };
 
-  if (loading) return <div className="flex justify-center items-center h-screen">로딩 중...</div>;
+  if (loading) return <div className="flex justify-center items-center min-h-[calc(100vh-160px)]">로딩 중...</div>;
 
   return (
     <div className="flex flex-col items-center justify-center min-h-[80vh] p-4">
@@ -164,7 +164,7 @@ function LoginContent(): React.JSX.Element {
 
 export default function LoginPage(): React.JSX.Element {
   return (
-    <Suspense fallback={<div className="flex justify-center items-center h-screen">로딩 중...</div>}>
+    <Suspense fallback={<div className="flex justify-center items-center min-h-[calc(100vh-160px)]">로딩 중...</div>}>
       <LoginContent />
     </Suspense>
   );
