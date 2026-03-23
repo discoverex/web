@@ -1,19 +1,45 @@
-@keyframes bounce-up-down {
-  0%,
-  100% {
-    transform: translateY(0);
-  }
-  50% {
-    transform: translateY(-5px);
-  }
+#game-board {
+  position: relative;
+  touch-action: none;
 }
 
 .animate-bounce-char {
   display: inline-block;
-  animation: bounce-up-down 0.8s ease-in-out infinite;
+  animation: bounce-char 0.5s infinite alternate;
 }
 
-/* 공백 문자가 사라지지 않도록 처리 */
-.whitespace-pre {
-  white-space: pre;
+@keyframes bounce-char {
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(-5px);
+  }
+}
+
+/* 폭죽(Confetti) 애니메이션 - 무한 반복 */
+.confetti {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  top: -10px;
+  opacity: 1;
+  animation: confetti-fall 4s linear infinite; /* 4초 주기로 무한 반복 */
+}
+
+@keyframes confetti-fall {
+  0% {
+    transform: translateY(0) rotate(0deg);
+    opacity: 1;
+  }
+  25% {
+    opacity: 1;
+  }
+  75% {
+    opacity: 0.8;
+  }
+  100% {
+    transform: translateY(100vh) rotate(720deg);
+    opacity: 0;
+  }
 }
