@@ -10,6 +10,8 @@ interface GameBoardHeaderViewProps {
   onClose: () => void;
   isCorrect?: boolean;
   isSubmitting?: boolean;
+  wrongAnswerCount?: number;
+  onGetWitnessStatement?: () => void;
 }
 
 export const GameBoardHeaderView: React.FC<GameBoardHeaderViewProps> = ({
@@ -21,6 +23,8 @@ export const GameBoardHeaderView: React.FC<GameBoardHeaderViewProps> = ({
   onClose,
   isCorrect,
   isSubmitting,
+  wrongAnswerCount = 0,
+  onGetWitnessStatement,
 }) => {
   return (
     <div className="mb-6 flex flex-wrap justify-center items-center gap-6 bg-zinc-50 dark:bg-zinc-950 p-6 rounded-3xl border border-zinc-100 dark:border-zinc-800 shadow-sm">
@@ -58,6 +62,21 @@ export const GameBoardHeaderView: React.FC<GameBoardHeaderViewProps> = ({
         >
           {aiLoading ? '🤖 AI 분석 중...' : '🤖 AI 훈수 듣기'}
         </button>
+
+        {wrongAnswerCount >= 3 && (
+          <button
+            onClick={onGetWitnessStatement}
+            disabled={isCorrect || isSubmitting}
+            className={`px-6 py-3 rounded-2xl text-xs font-black transition-all shadow-lg animate-in fade-in slide-in-from-bottom-2 ${
+              isCorrect || isSubmitting
+                ? 'bg-zinc-200 text-zinc-400 cursor-not-allowed'
+                : 'bg-gradient-to-r from-amber-500 to-orange-600 text-white hover:scale-105 active:scale-95 shadow-amber-500/20'
+            }`}
+          >
+            🕵️ 목격자 진술
+          </button>
+        )}
+
         <button
           onClick={onClose}
           disabled={isCorrect || isSubmitting}

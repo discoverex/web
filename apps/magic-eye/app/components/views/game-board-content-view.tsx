@@ -11,6 +11,8 @@ interface GameBoardContentViewProps {
   wrongAnswerId?: string | null;
   correctAnswerId?: number | null;
   isCorrect?: boolean;
+  witnessStatement?: string | null;
+  isWitnessVisible?: boolean;
 }
 
 const HINT_MESSAGES = [
@@ -54,15 +56,31 @@ export const GameBoardContentView: React.FC<GameBoardContentViewProps> = ({
   wrongAnswerId,
   correctAnswerId,
   isCorrect,
+  witnessStatement,
+  isWitnessVisible,
 }) => {
   const [showHint, setShowHint] = useState(false);
   const [isExiting, setIsExiting] = useState(false);
   const [currentMessage, setCurrentMessage] = useState("");
   const [duration, setDuration] = useState(5000);
 
+  // 목격자 퇴장 애니메이션 상태
+  const [isWitnessExiting, setIsWitnessExiting] = useState(false);
+
   // 이벤트 중복 방지 및 타이머 관리를 위한 ref
   const lastEventRef = useRef<string>("");
   const exitTimerRef = useRef<NodeJS.Timeout | null>(null);
+
+  // 목격자 가시성 변화에 따른 퇴장 애니메이션 처리
+  useEffect(() => {
+    if (!isWitnessVisible && witnessStatement) {
+      setIsWitnessExiting(true);
+      const timer = setTimeout(() => {
+        setIsWitnessExiting(false);
+      }, 600);
+      return () => clearTimeout(timer);
+    }
+  }, [isWitnessVisible, witnessStatement]);
 
   // 공룡 자동 퇴장 타이머 통합 관리
   useEffect(() => {
@@ -158,6 +176,20 @@ export const GameBoardContentView: React.FC<GameBoardContentViewProps> = ({
 
   return (
     <div className="relative flex-grow border-8 border-zinc-100 dark:border-zinc-800 rounded-3xl overflow-hidden cursor-pointer group flex justify-center items-center bg-zinc-200 dark:bg-zinc-950 shadow-inner min-h-[500px]">
+      {/* 목격자 진술 말풍선 (왼쪽) */}
+      {(isWitnessVisible || isWitnessExiting) && witnessStatement && (
+        <div
+          className={`absolute top-10 left-10 z-[60] flex items-end gap-3 ${isWitnessExiting ? 'animate-exit-left' : 'animate-hint-left'}`}
+        >
+          <div className="text-4xl filter drop-shadow-lg">🕵️</div>
+          <div className="bg-white dark:bg-zinc-800 p-4 rounded-2xl shadow-2xl border-2 border-amber-500 max-w-xs relative">
+            <p className="text-sm font-bold text-amber-600 dark:text-amber-400">{`"${witnessStatement}"`}</p>
+            <p className="text-[10px] mt-2 opacity-50 font-mono text-left">출처: 목격자 진술 기록</p>
+            <div className="absolute -bottom-2 left-4 w-4 h-4 bg-white dark:bg-zinc-800 border-l-2 border-b-2 border-amber-500 rotate-45" />
+          </div>
+        </div>
+      )}
+
       {aiHint && showHint && (
         <div
           className={`absolute top-10 right-10 z-[60] flex items-end gap-3 ${isExiting ? 'animate-exit-right' : 'animate-hint'}`}

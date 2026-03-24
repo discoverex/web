@@ -9,6 +9,7 @@ interface GameBoardContainerProps {
   selectedImageData: ImageData | null;
   candidates: QuizCandidate[];
   correctAnswerId: number | null;
+  description: string;
   onClose: () => void;
   onAnswerClick?: (id: string) => void;
   onRestart?: () => void;
@@ -21,6 +22,7 @@ export const GameBoardContainer: React.FC<GameBoardContainerProps> = ({
   selectedImageData,
   candidates,
   correctAnswerId,
+  description,
   onClose,
   onAnswerClick,
   onRestart,
@@ -28,7 +30,26 @@ export const GameBoardContainer: React.FC<GameBoardContainerProps> = ({
   isCorrect,
   isSubmitting,
 }) => {
-  const { aiLoading, aiHint, error, aiLevel, setAiLevel, getAiHint } = useAiHint(selectedImageData?.url);
+  const {
+    aiLoading,
+    aiHint,
+    error,
+    aiLevel,
+    setAiLevel,
+    getAiHint,
+    wrongAnswerCount,
+    witnessStatement,
+    isWitnessVisible,
+    incrementWrongAnswerCount,
+    showWitnessStatement,
+  } = useAiHint(selectedImageData?.url);
+
+  // 오답이 발생했을 때 카운트 증가
+  React.useEffect(() => {
+    if (wrongAnswerId) {
+      incrementWrongAnswerCount();
+    }
+  }, [wrongAnswerId]);
 
   if (!selectedImageData) {
     return <GameBoardEmptyView onRestart={onRestart} />;
@@ -51,6 +72,8 @@ export const GameBoardContainer: React.FC<GameBoardContainerProps> = ({
           onClose={onClose}
           isCorrect={isCorrect}
           isSubmitting={isSubmitting}
+          wrongAnswerCount={wrongAnswerCount}
+          onGetWitnessStatement={() => showWitnessStatement(description)}
         />
 
         <GameBoardContentView
@@ -62,6 +85,8 @@ export const GameBoardContainer: React.FC<GameBoardContainerProps> = ({
           wrongAnswerId={wrongAnswerId}
           correctAnswerId={correctAnswerId}
           isCorrect={isCorrect}
+          witnessStatement={witnessStatement}
+          isWitnessVisible={isWitnessVisible}
         />
       </div>
     </section>

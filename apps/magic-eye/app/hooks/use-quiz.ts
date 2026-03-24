@@ -9,6 +9,7 @@ export function useQuiz() {
   const [selectedImageData, setSelectedImageData] = useState<ImageData | null>(null);
   const [candidates, setCandidates] = useState<QuizCandidate[]>([]);
   const [correctAnswerId, setCorrectAnswerId] = useState<number | null>(null);
+  const [description, setDescription] = useState<string>('');
   const [wrongAnswerId, setWrongAnswerId] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
@@ -24,6 +25,7 @@ export function useQuiz() {
       setCandidates(data.candidates);
       setCorrectAnswerId(data.correctAnswerId);
       setSelectedImageData(data.selectedImageData);
+      setDescription(data.description);
       return true;
     } catch (err) {
       console.error(err);
@@ -52,6 +54,7 @@ export function useQuiz() {
   const closeGame = () => {
     setSelectedImageData(null);
     setCandidates([]);
+    setDescription('');
   };
 
   return {
@@ -60,6 +63,7 @@ export function useQuiz() {
     selectedImageData,
     candidates,
     correctAnswerId,
+    description,
     loading,
     error,
     wrongAnswerId,

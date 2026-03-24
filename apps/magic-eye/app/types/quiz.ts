@@ -9,6 +9,7 @@ export interface QuizCandidate {
 export interface CorrectAnswer {
   id: number;
   asset_id: string;
+  description: string;
 }
 
 export interface QuizData {

@@ -18,6 +18,7 @@ export default function MagicEyeGame() {
     selectedImageData,
     candidates,
     correctAnswerId,
+    description,
     error,
     wrongAnswerId,
     fetchQuiz,
@@ -127,6 +128,7 @@ export default function MagicEyeGame() {
               selectedImageData={selectedImageData}
               candidates={candidates}
               correctAnswerId={correctAnswerId}
+              description={description}
               onClose={returnToLobby}
               onAnswerClick={(id) => handleAnswerClick(id, onCorrectAnswer)}
               onRestart={loadNextQuiz}

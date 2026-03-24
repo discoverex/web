@@ -7,6 +7,7 @@ export const quizService = {
   async fetchQuiz(count: number): Promise<{
     candidates: QuizCandidate[];
     correctAnswerId: number;
+    description: string;
     selectedImageData: ImageData;
   }> {
     const response = await fetch(`${API_BASE_URL}/magic-eye/quiz?count=${count}`);
@@ -29,6 +30,7 @@ export const quizService = {
     return {
       candidates: quizData.candidates,
       correctAnswerId: quizData.correct_answer.id,
+      description: quizData.correct_answer.description,
       selectedImageData: {
         name: correctCandidate.display_name,
         url: correctCandidate.problem_url,

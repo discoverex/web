@@ -14,11 +14,46 @@ export const useAiHint = (imageUrl?: string) => {
   const [error, setError] = useState<string | null>(null);
   const [aiLevel, setAiLevel] = useState<number>(5);
 
-  // 이미지 URL이 변경되면 힌트와 에러 초기화
+  // 목격자 진술 관련 상태
+  const [wrongAnswerCount, setWrongAnswerCount] = useState<number>(0);
+  const [witnessStatement, setWitnessStatement] = useState<string | null>(null);
+  const [isWitnessVisible, setIsWitnessVisible] = useState<boolean>(false);
+
+  // 이미지 URL이 변경되면 힌트, 에러, 오답 횟수, 목격자 진술 초기화
   useEffect(() => {
     setAiHint(null);
     setError(null);
+    setWrongAnswerCount(0);
+    setWitnessStatement(null);
+    setIsWitnessVisible(false);
   }, [imageUrl]);
+
+  const incrementWrongAnswerCount = () => {
+    setWrongAnswerCount((prev) => prev + 1);
+  };
+
+  const showWitnessStatement = (description: string) => {
+    if (!description) return;
+
+    // '. ' 기준으로 문장을 구분해 배열화 (마지막 빈 문자열 제거를 위해 filter 사용)
+    const sentences = description.split('. ').filter((s) => s.trim().length > 0);
+    if (sentences.length === 0) return;
+
+    // 랜덤하게 하나 선택 (문장 끝에 마침표 복원)
+    const randomIndex = Math.floor(Math.random() * sentences.length);
+    let randomSentence = sentences[randomIndex].trim();
+    if (!randomSentence.endsWith('.')) {
+      randomSentence += '.';
+    }
+
+    setWitnessStatement(randomSentence);
+    setIsWitnessVisible(true);
+
+    // 5초 후 자동으로 숨김
+    setTimeout(() => {
+      setIsWitnessVisible(false);
+    }, 5000);
+  };
 
   const getAiHint = async (candidates: QuizCandidate[], correctAnswerId: number) => {
     if (!imageUrl) return;
@@ -64,5 +99,10 @@ export const useAiHint = (imageUrl?: string) => {
     aiLevel,
     setAiLevel,
     getAiHint,
+    wrongAnswerCount,
+    witnessStatement,
+    isWitnessVisible,
+    incrementWrongAnswerCount,
+    showWitnessStatement,
   };
 };
