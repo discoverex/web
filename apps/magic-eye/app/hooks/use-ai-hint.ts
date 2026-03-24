@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { AiHint, QuizCandidate } from '@/app/types';
 import { fetchAiHint } from '@/app/utils/get-ai-hint';
+import { useGameStore } from '@/store/use-game-store';
 
 // 레벨에 따른 오답 확률을 계산하는 람다 함수
 const getErrorRate = (level: number): number => {
@@ -13,6 +14,9 @@ export const useAiHint = (imageUrl?: string) => {
   const [aiHint, setAiHint] = useState<AiHint | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [aiLevel, setAiLevel] = useState<number>(5);
+  const [insufficientPointsMsg, setInsufficientPointsMsg] = useState<string | null>(null);
+
+  const { score, deductScore } = useGameStore();
 
   // 목격자 진술 관련 상태
   const [wrongAnswerCount, setWrongAnswerCount] = useState<number>(0);
@@ -26,6 +30,7 @@ export const useAiHint = (imageUrl?: string) => {
     setWrongAnswerCount(0);
     setWitnessStatement(null);
     setIsWitnessVisible(false);
+    setInsufficientPointsMsg(null);
   }, [imageUrl]);
 
   const incrementWrongAnswerCount = () => {
@@ -58,10 +63,26 @@ export const useAiHint = (imageUrl?: string) => {
   const getAiHint = async (candidates: QuizCandidate[], correctAnswerId: number) => {
     if (!imageUrl) return;
 
+    // 점수 체크 (Lv1은 무료, Lv2부터 소모)
+    const cost = aiLevel > 1 ? (aiLevel - 1) * 10 : 0;
+    if (score < cost) {
+      setInsufficientPointsMsg("나를 부르기엔 아직 내공이 부족하군! 점수를 더 쌓아오렴.");
+      // 3초 후 메시지 초기화
+      setTimeout(() => setInsufficientPointsMsg(null), 3000);
+      return;
+    }
+
     setAiLoading(true);
     setAiHint(null);
     setError(null);
+    setInsufficientPointsMsg(null);
+    
     try {
+      // 실제 점수 차감
+      if (cost > 0) {
+        deductScore(cost);
+      }
+
       const hint = await fetchAiHint({
         imageUrl,
         level: aiLevel,
@@ -104,5 +125,6 @@ export const useAiHint = (imageUrl?: string) => {
     isWitnessVisible,
     incrementWrongAnswerCount,
     showWitnessStatement,
+    insufficientPointsMsg,
   };
 };

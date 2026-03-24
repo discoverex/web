@@ -11,7 +11,7 @@ interface GameBoardContainerProps {
   correctAnswerId: number | null;
   description: string;
   onClose: () => void;
-  onAnswerClick?: (id: string) => void;
+  onAnswerClick?: (id: string, bonus: number) => void;
   onRestart?: () => void;
   wrongAnswerId?: string | null;
   isCorrect?: boolean;
@@ -42,7 +42,29 @@ export const GameBoardContainer: React.FC<GameBoardContainerProps> = ({
     isWitnessVisible,
     incrementWrongAnswerCount,
     showWitnessStatement,
+    insufficientPointsMsg,
   } = useAiHint(selectedImageData?.url);
+
+  // 타이머 상태 (60초)
+  const [timeLeft, setTimeLeft] = React.useState<number>(60);
+
+  // 이미지가 바뀌면 타이머 리셋
+  React.useEffect(() => {
+    if (selectedImageData) {
+      setTimeLeft(60);
+    }
+  }, [selectedImageData?.url]);
+
+  // 타이머 작동 로직
+  React.useEffect(() => {
+    if (isCorrect || isSubmitting || timeLeft <= 0) return;
+
+    const timer = setInterval(() => {
+      setTimeLeft((prev) => Math.max(0, prev - 1));
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, [isCorrect, isSubmitting, timeLeft]);
 
   // 오답이 발생했을 때 카운트 증가
   React.useEffect(() => {
@@ -70,10 +92,12 @@ export const GameBoardContainer: React.FC<GameBoardContainerProps> = ({
             }
           }}
           onClose={onClose}
+          onRestart={onRestart}
           isCorrect={isCorrect}
           isSubmitting={isSubmitting}
           wrongAnswerCount={wrongAnswerCount}
           onGetWitnessStatement={() => showWitnessStatement(description)}
+          timeLeft={timeLeft}
         />
 
         <GameBoardContentView
@@ -81,12 +105,14 @@ export const GameBoardContainer: React.FC<GameBoardContainerProps> = ({
           aiHint={aiHint}
           aiLevel={aiLevel}
           candidates={candidates}
-          onAnswerClick={onAnswerClick}
+          onAnswerClick={(id) => onAnswerClick?.(id, timeLeft * 10)}
           wrongAnswerId={wrongAnswerId}
           correctAnswerId={correctAnswerId}
           isCorrect={isCorrect}
           witnessStatement={witnessStatement}
           isWitnessVisible={isWitnessVisible}
+          insufficientPointsMsg={insufficientPointsMsg}
+          timeLeft={timeLeft}
         />
       </div>
     </section>

@@ -15,6 +15,7 @@ export function useQuiz() {
   const [error, setError] = useState<string | null>(null);
 
   const incrementScore = useGameStore((state) => state.incrementScore);
+  const addBonusScore = useGameStore((state) => state.addBonusScore);
 
   const fetchQuiz = useCallback(async () => {
     setLoading(true);
@@ -36,11 +37,14 @@ export function useQuiz() {
     }
   }, [candidateCount]);
 
-  const handleAnswerClick = (ansId: string, onCorrect?: () => void) => {
+  const handleAnswerClick = (ansId: string, onCorrect?: () => void, bonusScore: number = 0) => {
     if (wrongAnswerId || correctAnswerId === null) return;
 
     if (parseInt(ansId) === correctAnswerId) {
-      incrementScore();
+      incrementScore(candidateCount * 10);
+      if (bonusScore > 0) {
+        addBonusScore(bonusScore);
+      }
       // 정답인 경우 콜백 실행 (외부에서 상태 제어용)
       if (onCorrect) onCorrect();
     } else {

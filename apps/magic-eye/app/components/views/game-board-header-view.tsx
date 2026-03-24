@@ -8,10 +8,12 @@ interface GameBoardHeaderViewProps {
   onAiLevelChange: (level: number) => void;
   onGetAiHint: () => void;
   onClose: () => void;
+  onRestart?: () => void;
   isCorrect?: boolean;
   isSubmitting?: boolean;
   wrongAnswerCount?: number;
   onGetWitnessStatement?: () => void;
+  timeLeft?: number;
 }
 
 export const GameBoardHeaderView: React.FC<GameBoardHeaderViewProps> = ({
@@ -21,10 +23,12 @@ export const GameBoardHeaderView: React.FC<GameBoardHeaderViewProps> = ({
   onAiLevelChange,
   onGetAiHint,
   onClose,
+  onRestart,
   isCorrect,
   isSubmitting,
   wrongAnswerCount = 0,
   onGetWitnessStatement,
+  timeLeft = 60,
 }) => {
   return (
     <div className="mb-6 flex flex-wrap justify-center items-center gap-6 bg-zinc-50 dark:bg-zinc-950 p-6 rounded-3xl border border-zinc-100 dark:border-zinc-800 shadow-sm">
@@ -57,7 +61,7 @@ export const GameBoardHeaderView: React.FC<GameBoardHeaderViewProps> = ({
           className={`px-6 py-3 rounded-2xl text-xs font-black transition-all shadow-lg ${
             aiLoading || isCorrect || isSubmitting
               ? 'bg-zinc-200 text-zinc-400 cursor-not-allowed'
-              : 'bg-gradient-to-r from-purple-600 to-indigo-600 text-white hover:scale-105 active:scale-95 shadow-purple-500/20'
+              : 'bg-linear-to-r from-purple-600 to-indigo-600 text-white hover:scale-105 active:scale-95 shadow-purple-500/20'
           }`}
         >
           {aiLoading ? '🤖 AI 분석 중...' : '🤖 AI 훈수 듣기'}
@@ -70,7 +74,7 @@ export const GameBoardHeaderView: React.FC<GameBoardHeaderViewProps> = ({
             className={`px-6 py-3 rounded-2xl text-xs font-black transition-all shadow-lg animate-in fade-in slide-in-from-bottom-2 ${
               isCorrect || isSubmitting
                 ? 'bg-zinc-200 text-zinc-400 cursor-not-allowed'
-                : 'bg-gradient-to-r from-amber-500 to-orange-600 text-white hover:scale-105 active:scale-95 shadow-amber-500/20'
+                : 'bg-linear-to-r from-amber-500 to-orange-600 text-white hover:scale-105 active:scale-95 shadow-amber-500/20'
             }`}
           >
             🕵️ 목격자 진술
@@ -86,8 +90,17 @@ export const GameBoardHeaderView: React.FC<GameBoardHeaderViewProps> = ({
               : 'bg-red-50 text-red-500 hover:bg-red-500 hover:text-white'
           }`}
         >
-          {isSubmitting ? '종료 중...' : '닫기'}
+          {isSubmitting ? '저장 중...' : '게임 종료'}
         </button>
+
+        {timeLeft <= 0 && !isCorrect && (
+          <button
+            onClick={onRestart}
+            className="px-6 py-3 rounded-2xl text-xs font-black transition-all shadow-lg bg-linear-to-r from-blue-600 to-cyan-600 text-white hover:scale-105 active:scale-95 animate-in fade-in slide-in-from-right-4"
+          >
+            🔄 다시 도전
+          </button>
+        )}
       </div>
     </div>
   );

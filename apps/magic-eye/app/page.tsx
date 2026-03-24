@@ -79,9 +79,9 @@ export default function MagicEyeGame() {
   // 정답 처리 핸들러
   const onCorrectAnswer = () => {
     setGameState('CORRECT');
-    // 3초간 정답 축하 효과를 보여준 뒤 바로 다음 퀴즈 로드 (공룡 대사 읽을 시간 확보)
+    // 3초간 정답 축하 효과를 보여준 뒤 로비로 돌아가 난이도 재선택 가능하게 함
     setTimeout(() => {
-      loadNextQuiz();
+      setGameState('LOBBY');
     }, 3000);
   };
 
@@ -89,13 +89,11 @@ export default function MagicEyeGame() {
     <div
       className={`w-full max-w-[1600px] mx-auto py-2 font-sans text-black dark:text-white ${wrongAnswerId ? 'animate-shake' : ''}`}
     >
-      {/* 점수판 표시 - 위치를 살짝 아래로 조정하고 크기를 조금 줄임 */}
-      {gameState !== 'LOBBY' && (
-        <div className="fixed top-24 right-6 z-50 bg-white/80 dark:bg-zinc-900/80 backdrop-blur-md px-5 py-2 rounded-2xl shadow-xl border border-zinc-200 dark:border-zinc-800 flex flex-col items-center animate-in slide-in-from-right duration-500">
-          <span className="text-[10px] font-bold opacity-50 uppercase tracking-widest">SCORE</span>
-          <span className="text-3xl font-black text-amber-500 leading-none">{score}</span>
-        </div>
-      )}
+      {/* 점수판 표시 - 모든 게임 상태에서 상시 표시 */}
+      <div className="fixed top-24 right-6 z-50 bg-white/80 dark:bg-zinc-900/80 backdrop-blur-md px-5 py-2 rounded-2xl shadow-xl border border-zinc-200 dark:border-zinc-800 flex flex-col items-center animate-in slide-in-from-right duration-500">
+        <span className="text-[10px] font-bold opacity-50 uppercase tracking-widest">SESSION SCORE</span>
+        <span className="text-3xl font-black text-amber-500 leading-none">{score}</span>
+      </div>
 
       <main className="w-full">
         {/* 1. 로비 화면 */}
@@ -130,7 +128,7 @@ export default function MagicEyeGame() {
               correctAnswerId={correctAnswerId}
               description={description}
               onClose={returnToLobby}
-              onAnswerClick={(id) => handleAnswerClick(id, onCorrectAnswer)}
+              onAnswerClick={(id, bonus) => handleAnswerClick(id, onCorrectAnswer, bonus)}
               onRestart={loadNextQuiz}
               wrongAnswerId={wrongAnswerId}
               isCorrect={gameState === 'CORRECT'}

@@ -8,7 +8,9 @@ interface GameState {
   score: number;
   gameStatus: GameStatus;
   startGame: () => void;
-  incrementScore: () => void;
+  incrementScore: (amount: number) => void;
+  addBonusScore: (points: number) => void;
+  deductScore: (points: number) => void;
   resetGame: () => void;
 }
 
@@ -20,10 +22,11 @@ export const useGameStore = create<GameState>((set) => ({
   startGame: () =>
     set({
       game_id: globalThis.crypto.randomUUID(),
-      score: 0,
       gameStatus: 'playing',
     }),
-  incrementScore: () => set((state) => ({ score: state.score + 1 })),
+  incrementScore: (amount) => set((state) => ({ score: state.score + amount })),
+  addBonusScore: (points) => set((state) => ({ score: state.score + points })),
+  deductScore: (points) => set((state) => ({ score: Math.max(0, state.score - points) })),
   resetGame: () =>
     set({
       game_id: null,
