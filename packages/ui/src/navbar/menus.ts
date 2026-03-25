@@ -6,19 +6,22 @@ export interface MenuItem {
 }
 
 const HUB_URL =
-  process.env.NODE_ENV === "production"
+  process.env.NEXT_PUBLIC_GAME_HUB_URL ||
+  (process.env.NODE_ENV === "production"
     ? "https://discoverex-game-hub-329947062450.asia-northeast3.run.app"
-    : "http://localhost:3000";
+    : "http://localhost:3000");
 
 const DISCOVEREX_URL =
-  process.env.NODE_ENV === "production"
+  process.env.NEXT_PUBLIC_DISCOVEREX_URL ||
+  (process.env.NODE_ENV === "production"
     ? "https://discoverex-discoverex-329947062450.asia-northeast3.run.app"
-    : "http://localhost:3001";
+    : "http://localhost:3001");
 
 const MAGICEYE_URL =
-  process.env.NODE_ENV === "production"
+  process.env.NEXT_PUBLIC_MAGIC_EYE_URL ||
+  (process.env.NODE_ENV === "production"
     ? "https://discoverex-magic-eye-329947062450.asia-northeast3.run.app"
-    : "http://localhost:3002";
+    : "http://localhost:3002");
 
 export const menus: MenuItem[] = [
   {

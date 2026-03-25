@@ -2,7 +2,7 @@
 
 import React from "react";
 import { menus } from "./menus";
-import { useAuth, auth } from "../auth";
+import { appendSSOToken, resolveAuthToken } from "../auth";
 import UserHeader from "./user-header";
 import ThemeSwitcher from "./theme-switcher";
 
@@ -11,35 +11,16 @@ export default function GlobalNavbar({
 }: {
   user?: any | null;
 }): React.JSX.Element {
-  const { user: authUser } = useAuth();
-  
-  // 현재 활성 유저 (인증된 유저 정보 우선)
-  const user = authUser || initialUser;
-
   const handleSSOLink = async (
     e: React.MouseEvent<HTMLAnchorElement>,
     path: string,
   ) => {
     e.preventDefault();
-    
-    // Firebase SDK가 준비되었을 경우 실제 객체를 가져옴
-    const fbUser = auth.currentUser;
     let finalPath = path;
+    const { token } = await resolveAuthToken();
 
-    if (fbUser) {
-      const token = await fbUser.getIdToken();
-      const separator = finalPath.includes("?") ? "&" : "?";
-      finalPath = `${finalPath}${separator}sso_token=${token}`;
-    } else {
-      // Firebase가 아직 준비 안됐거나, 서버 유저 정보만 있는 경우 세션 스토리지 등 활용
-      const ssoToken =
-        typeof window !== "undefined"
-          ? window.sessionStorage.getItem("sso_token")
-          : null;
-      if (ssoToken) {
-        const separator = finalPath.includes("?") ? "&" : "?";
-        finalPath = `${finalPath}${separator}sso_token=${ssoToken}`;
-      }
+    if (token) {
+      finalPath = appendSSOToken(finalPath, token);
     }
 
     window.location.href = finalPath;

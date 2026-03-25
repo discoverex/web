@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect, useState, Suspense } from 'react';
-import { appendSSOToken, auth, useAuth } from '@repo/ui/auth';
+import { appendSSOToken, resolveAuthToken, useAuth } from '@repo/ui/auth';
 import { useRouter, useSearchParams } from 'next/navigation';
 
 function LoginContent(): React.JSX.Element {
@@ -23,14 +23,7 @@ function LoginContent(): React.JSX.Element {
 
       if (user) {
         if (returnUrl) {
-          // 1. Firebase ID 토큰 시도
-          let token = await auth.currentUser?.getIdToken();
-
-          // 2. Firebase 토큰이 없다면 sessionStorage의 sso_token(자체 JWT) 사용
-          if (!token && typeof window !== 'undefined') {
-            token = window.sessionStorage.getItem('sso_token') || undefined;
-          }
-
+          const { token } = await resolveAuthToken();
           window.location.href = token ? appendSSOToken(returnUrl, token) : returnUrl;
         } else {
           router.push('/');

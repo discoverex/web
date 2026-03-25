@@ -1,14 +1,18 @@
 import { cookies } from "next/headers";
+import { isLocalServerUrl, normalizeBackendUser } from "./auth-helpers";
 
 export async function getServerUser() {
+  const apiUrl = process.env.NEXT_PUBLIC_SERVER_URL;
+  if (!isLocalServerUrl(apiUrl)) {
+    return null;
+  }
+
   const cookieStore = await cookies();
   const accessToken = cookieStore.get("access_token")?.value;
 
   if (!accessToken) {
     return null;
   }
-
-  const apiUrl = process.env.NEXT_PUBLIC_SERVER_URL;
 
   try {
     const response = await fetch(`${apiUrl}/auth/users/me`, {
@@ -25,17 +29,16 @@ export async function getServerUser() {
     }
 
     const result = await response.json();
-    const backendUser = result.data;
-
-    if (!backendUser) return null;
-
-    return {
-      uid: backendUser.id || backendUser.uid,
-      email: backendUser.email,
-      displayName: backendUser.name || backendUser.displayName,
-      photoURL: backendUser.photoURL || backendUser.profile_image,
-      ...backendUser,
-    };
+    const normalizedUser = normalizeBackendUser(result.data);
+    return normalizedUser
+      ? {
+          uid: normalizedUser.uid,
+          email: normalizedUser.email,
+          displayName: normalizedUser.displayName,
+          photoURL: normalizedUser.photoURL,
+          ...normalizedUser.raw,
+        }
+      : null;
   } catch (error) {
     console.error("Server Auth Error:", error);
     return null;

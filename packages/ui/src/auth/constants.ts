@@ -1,7 +1,9 @@
-export const HUB_URL =
+const DEFAULT_HUB_URL =
   process.env.NODE_ENV === "production"
     ? "https://discoverex-game-hub-329947062450.asia-northeast3.run.app"
     : "http://localhost:3000";
+
+export const HUB_URL = process.env.NEXT_PUBLIC_GAME_HUB_URL || DEFAULT_HUB_URL;
 
 export const getLoginUrl = (returnUrl?: string) => {
   const baseUrl = `${HUB_URL}/login`;

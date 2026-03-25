@@ -36,6 +36,13 @@ interface AssetItemProps {
   isGameClear: boolean;
 }
 
+const getAssetBaseName = (value: string) => {
+  const fileName = value.split('/').pop() ?? value;
+  return fileName.replace(/\.[^.]+$/, '');
+};
+
+const getAssetFileName = (value: string) => value.split('/').pop() ?? value;
+
 const AssetItem: React.FC<AssetItemProps> = ({
   asset,
   playingId,
@@ -154,7 +161,8 @@ export const GameBoard: React.FC<GameBoardProps> = ({ manifest, layerItems }) =>
 
     const combinedAssets: GameAsset[] = answers
       .map((e) => {
-        const lottieTarget = lottieLayerForms.find((x) => x.name.includes(e.src.split('.')[0]));
+        const answerBaseName = getAssetBaseName(e.src);
+        const lottieTarget = lottieLayerForms.find((x) => getAssetBaseName(x.name) === answerBaseName);
 
         if (lottieTarget) {
           return {
@@ -169,7 +177,8 @@ export const GameBoard: React.FC<GameBoardProps> = ({ manifest, layerItems }) =>
       })
       .filter((asset): asset is GameAsset => asset !== null);
 
-    const targetBackUrl = layerItems.find((e) => e.name === background_img.src)?.url;
+    const backgroundFileName = getAssetFileName(background_img.src);
+    const targetBackUrl = layerItems.find((e) => getAssetFileName(e.name) === backgroundFileName)?.url;
     if (targetBackUrl) setBack(targetBackUrl);
 
     setAssets(combinedAssets.sort((a, b) => a.order - b.order));

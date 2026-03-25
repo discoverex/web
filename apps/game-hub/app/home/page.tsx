@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { useAuth, auth } from '@repo/ui/auth';
+import { appendSSOToken, resolveAuthToken, useAuth } from '@repo/ui/auth';
 import { menus } from '@repo/ui/navbar';
 
 export default function Home(): React.ReactElement {
@@ -12,18 +12,10 @@ export default function Home(): React.ReactElement {
     if (!menu) return;
 
     let finalPath = menu.path;
-    const currentUser = auth.currentUser;
+    const { token } = await resolveAuthToken();
 
-    if (currentUser) {
-      const token = await currentUser.getIdToken();
-      const separator = finalPath.includes('?') ? '&' : '?';
-      finalPath = `${finalPath}${separator}sso_token=${token}`;
-    } else {
-      const ssoToken = window.sessionStorage.getItem('sso_token');
-      if (ssoToken) {
-        const separator = finalPath.includes('?') ? '&' : '?';
-        finalPath = `${finalPath}${separator}sso_token=${ssoToken}`;
-      }
+    if (token) {
+      finalPath = appendSSOToken(finalPath, token);
     }
 
     window.location.href = finalPath;
