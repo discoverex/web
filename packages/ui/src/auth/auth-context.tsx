@@ -148,12 +148,13 @@ export function AuthProvider({
         }
         throw new Error("No session");
       } catch (error: any) {
-        if (error.response?.status === 401) {
-          await clearLocalAuth(); // 확실한 세션 만료 시에만 파기
+        if (error.response?.status === 401 || error.response?.status === 403) {
+          await clearLocalAuth(); // 401(Unauthorized) 또는 403(Forbidden) 시 세션 파기
         }
         // 그 외의 에러(500 등)는 세션을 유지하며 false만 반환
         return false;
-      } finally {
+      }
+ finally {
         isInitialCheckDone.current = true;
         setLoading(false);
         isRefreshing.current = false; // 실행 완료 후 잠금 해제
