@@ -14,8 +14,9 @@ export default function UserHeader({
 }: UserHeaderProps): React.JSX.Element {
   const { user: authUser, logout, loading } = useAuth();
 
-  // 서버에서 받은 정보가 있거나, 클라이언트 인증이 완료된 유저 정보를 우선 사용
-  const user = authUser || initialUser;
+  // authUser가 있으면 무조건 최우선, 없으면 initialUser를 폴백으로 사용
+  // 단, 로딩이 완전히 끝났는데(!loading) authUser가 없다면 정말 없는 것이므로 null이 됨
+  const user = authUser || (loading ? initialUser : null);
 
   // 로딩 중이고 아직 유저 정보가 확정되지 않았다면 아무것도 보여주지 않거나 스켈레톤 표시 (깜빡임 방지)
   if (loading && !user) {

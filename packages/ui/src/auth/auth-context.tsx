@@ -122,22 +122,26 @@ export function AuthProvider({
           const newUid = backendUser.id || backendUser.uid;
 
           setUser((prev: any) => {
-            // 필요한 핵심 필드만 비교
-            const isSameUser =
+            const newPhoto = backendUser.photoURL || backendUser.profile_image;
+            const newName = backendUser.name || backendUser.displayName;
+
+            // prev가 있고 모든 필드가 같다면 객체 참조를 유지 (불필요한 리렌더링 방지)
+            if (
               prev &&
               prev.uid === newUid &&
               prev.email === backendUser.email &&
-              prev.photoURL ===
-                (backendUser.photoURL || backendUser.profile_image);
+              prev.displayName === newName &&
+              prev.photoURL === newPhoto
+            ) {
+              return prev;
+            }
 
-            if (isSameUser) return prev; // 데이터가 같으면 '절대' 새 객체를 만들지 않음
-
-            // 꼭 필요한 데이터만 정제해서 저장 (서버의 가변 필드 제외)
+            // 하나라도 다르거나 prev가 없으면 새 객체 생성
             return {
               uid: newUid,
               email: backendUser.email,
-              displayName: backendUser.name || backendUser.displayName,
-              photoURL: backendUser.photoURL || backendUser.profile_image,
+              displayName: newName,
+              photoURL: newPhoto,
             };
           });
           return true;
@@ -199,13 +203,18 @@ export function AuthProvider({
       }
 
       // 3. 백엔드 세션 확인
-      // 만약 서버에서 이미 유저를 가져왔다면(initialUser),
-      // 클라이언트에서 즉시 다시 묻지 않고 일단 믿습니다.
-      if (initialUser && !isInitialCheckDone.current) {
-        isInitialCheckDone.current = true;
-        setLoading(false);
-      } else if (!isInitialCheckDone.current) {
-        await refreshSession();
+      // 서버에서 유저를 가져왔더라도(initialUser), 클라이언트에서 한 번 더 확인하여
+      // 토큰 만료 여부나 계정 전환 여부를 동기화합니다.
+      if (!isInitialCheckDone.current) {
+        if (initialUser) {
+          // initialUser가 있으면 일단 로딩을 풀고 화면을 보여주되, 배경에서 갱신 시도
+          setUser(initialUser);
+          isInitialCheckDone.current = true;
+          setLoading(false);
+          refreshSession(); // 배경 갱신
+        } else {
+          await refreshSession();
+        }
       }
     };
 
@@ -263,7 +272,7 @@ export function AuthProvider({
       !user &&
       requireAuth &&
       !isLoggingOut &&
-      !isRefreshing.current
+      !isRefreshing.current // 갱신 중에는 리다이렉트하지 않음
     ) {
       if (typeof window !== "undefined") {
         if (window.location.pathname.startsWith("/login")) return;
