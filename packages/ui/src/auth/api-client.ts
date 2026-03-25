@@ -3,7 +3,7 @@ import { auth } from "./firebase";
 
 const apiClient = axios.create({
   baseURL: process.env.NEXT_PUBLIC_SERVER_URL,
-  withCredentials: true, // 쿠키 전송 허용
+  // withCredentials: true, // JWT를 사용하므로 쿠키 전송을 일단 비활성화 (CORS 오류 방지)
   headers: {
     "Content-Type": "application/json",
   },

@@ -82,6 +82,7 @@ export function AuthProvider({
       console.error("Firebase signOut error:", e);
     }
     setUser(null);
+    isInitialCheckDone.current = true; // 세션이 비었음을 명시
   }, []);
 
   const isRefreshing = useRef(false); // 중복 호출 방지용 Lock
@@ -89,7 +90,8 @@ export function AuthProvider({
   const refreshSession = useCallback(
     async (manualToken?: string, force: boolean = false) => {
       // manualToken이 있을 때는 기존 실행 중인 락(isRefreshing)을 무시하고 강제 진행합니다.
-      if (isLoggingOut || (!manualToken && isRefreshing.current)) return false;
+      // 로그아웃 중이거나 글로벌 로그아웃 신호가 있으면 갱신을 차단합니다.
+      if (isLoggingOut || hasGlobalLogoutSignal() || (!manualToken && isRefreshing.current)) return false;
 
       // 쿨타임 체크 추가 (함수 진입 시점에서도 보호)
       // manualToken이 있거나 force가 true면 쿨타임을 무시합니다.
