@@ -31,7 +31,7 @@ interface AuthContextType {
   loginWithEmail: (email: string, pass: string) => Promise<void>;
   signUpWithEmail: (email: string, pass: string, name: string) => Promise<void>;
   logout: () => Promise<void>;
-  refreshSession: () => Promise<boolean>;
+  refreshSession: (manualToken?: string, force?: boolean) => Promise<boolean>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -76,19 +76,27 @@ export function AuthProvider({
     if (typeof window !== "undefined") {
       window.sessionStorage.removeItem("sso_token");
     }
-    await signOut(auth);
+    try {
+      await signOut(auth);
+    } catch (e) {
+      console.error("Firebase signOut error:", e);
+    }
     setUser(null);
   }, []);
 
   const isRefreshing = useRef(false); // 중복 호출 방지용 Lock
 
   const refreshSession = useCallback(
-    async (manualToken?: string) => {
-      if (isLoggingOut || isRefreshing.current) return false;
+    async (manualToken?: string, force: boolean = false) => {
+      // manualToken이 있을 때는 기존 실행 중인 락(isRefreshing)을 무시하고 강제 진행합니다.
+      if (isLoggingOut || (!manualToken && isRefreshing.current)) return false;
 
       // 쿨타임 체크 추가 (함수 진입 시점에서도 보호)
+      // manualToken이 있거나 force가 true면 쿨타임을 무시합니다.
       const now = Date.now();
-      if (now - lastCheckTime.current < 2000) return false;
+      const shouldSkipCooldown = !!manualToken || force;
+      if (!shouldSkipCooldown && now - lastCheckTime.current < 2000)
+        return false;
 
       isRefreshing.current = true; // 실행 시작 시 잠금
       lastCheckTime.current = now;
@@ -209,7 +217,7 @@ export function AuthProvider({
           if (hasGlobalLogoutSignal()) {
             await clearLocalAuth();
           } else {
-            await refreshSession();
+            await refreshSession(undefined, true);
           }
         } else if (!initialUser) {
           // 서버 유저도 없고 Firebase 유저도 없으면 확실히 null
@@ -268,37 +276,41 @@ export function AuthProvider({
     setGlobalLogoutSignal(); // 글로벌 로그아웃 신호 발생
 
     try {
-      try {
-        await apiClient.post("/auth/logout");
-      } catch (e) {}
+      await apiClient.post("/auth/logout").catch(() => {});
       await clearLocalAuth();
       if (typeof window !== "undefined") {
         window.location.href = getLogoutUrl();
       }
     } catch (error) {
       console.error("Logout Error:", error);
-      setIsLoggingOut(false);
+    } finally {
       setLoading(false);
+      // 리다이렉트가 일어나지 않았을 경우를 대비해 일정 시간 후 해제
+      setTimeout(() => setIsLoggingOut(false), 1000);
     }
   };
 
   const loginWithGoogle = async () => {
     setIsLoggingOut(false);
+    setLoading(true);
     clearGlobalLogoutSignal(); // 로그인 시 신호 제거
-    const provider = new GoogleAuthProvider();
     try {
+      const provider = new GoogleAuthProvider();
       const result = await signInWithPopup(auth, provider);
       const token = await result.user.getIdToken();
       if (typeof window !== "undefined")
         window.sessionStorage.setItem("sso_token", token);
-      await refreshSession();
+      await refreshSession(token);
     } catch (error) {
       throw error;
+    } finally {
+      setLoading(false);
     }
   };
 
   const loginWithEmail = async (email: string, pass: string) => {
     setIsLoggingOut(false);
+    setLoading(true);
     clearGlobalLogoutSignal(); // 로그인 시 신호 제거
     try {
       const response = await apiClient.post("/auth/login", {
@@ -308,19 +320,23 @@ export function AuthProvider({
       const token = response.data.data;
       if (typeof window !== "undefined")
         window.sessionStorage.setItem("sso_token", token);
-      await refreshSession();
+      await refreshSession(token);
     } catch (error: any) {
       try {
         await signInWithEmailAndPassword(auth, email, pass);
-        await refreshSession();
+        const token = (await auth.currentUser?.getIdToken()) || undefined;
+        await refreshSession(token);
       } catch (fbError) {
         throw error;
       }
+    } finally {
+      setLoading(false);
     }
   };
 
   const signUpWithEmail = async (email: string, pass: string, name: string) => {
     setIsLoggingOut(false);
+    setLoading(true);
     clearGlobalLogoutSignal(); // 로그인 시 신호 제거
     try {
       const result = await createUserWithEmailAndPassword(auth, email, pass);
@@ -328,9 +344,11 @@ export function AuthProvider({
       const token = await result.user.getIdToken();
       if (typeof window !== "undefined")
         window.sessionStorage.setItem("sso_token", token);
-      await refreshSession();
+      await refreshSession(token);
     } catch (error) {
       throw error;
+    } finally {
+      setLoading(false);
     }
   };
 
